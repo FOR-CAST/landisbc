@@ -6,7 +6,7 @@
 \alias{landisbc-package}
 \title{landisbc: British Columbia Study-Area Tools for LANDIS-II Workflows}
 \description{
-Province of British Columbia data-preparation helpers for 'LANDIS-II' forest-landscape simulation workflows -- for example, deriving observed fire-severity distributions from provincial burn-severity data for Dynamic Fire calibration. Companion to 'landisutils' (the study-area-agnostic 'LANDIS-II' tooling); BC-specific data sources and mappings live here so they can be reused across British Columbia projects.
+Province of British Columbia data-preparation helpers for 'LANDIS-II' forest-landscape simulation workflows -- e.g. deriving observed fire-severity distributions from provincial burn-severity data for Dynamic Fire calibration, and translating Vegetation Resource Inventory ('VRI') polygons into 'LANDIS-II' initial-communities maps + CSVs. Companion to 'landisutils' (the study-area-agnostic 'LANDIS-II' tooling); BC-specific data sources and mappings live here so they can be reused across British Columbia projects.
 }
 \seealso{
 Useful links:
@@ -22,6 +22,12 @@ Useful links:
 Authors:
 \itemize{
   \item Alex M Chubaty \email{achubaty@for-cast.ca} (\href{https://orcid.org/0000-0001-7146-8135}{ORCID})
+  \item  Unknown (Original Python arcpy implementation of the VRI-to-initial-communities pipeline (provenance unknown; received via Flora Krivak-Tetley))
+}
+
+Other contributors:
+\itemize{
+  \item Flora Krivak-Tetley (BC species-code edits in CleanUpSpeciesCodeLayer (passed through from a third-party Python source)) [contributor]
 }
 
 }

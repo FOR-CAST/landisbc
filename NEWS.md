@@ -1,3 +1,20 @@
+# landisbc 0.0.4
+
+* New BC fire-and-fuel data helpers, de-duplicated from shared BC_HRV / gitanyow-partial-harvest code: the loaders tolerate either project's column names (e.g. `YEAR`/`FIRE_YEAR`, `ADJ_HA`/`POLY_HA`/`HECTARES`), the fuel-typing WFS query is done in EPSG:3005 (robust to a non-standard sim CRS), and fuel-type area is computed from the raster resolution (not hardcoded per-cell).
+* `calc_recently_disturbed()` rasterises the most-recent stand-replacing disturbance (since a cutoff year) to a rasterToMatch.
+* `clip_nfdb_to_study_area()` projects + crops NFDB fire points to a study-area rasterToMatch.
+* `compare_fuel_typing()` builds a confusion matrix and overall agreement between bcwsft and provincial fuel types.
+* `fuel_types_distribution()` summarises labelled area-by-fuel-type from the provincial fuel raster, with hectares from the raster resolution.
+* `get_fuel_types()` fetches the provincial "BC Wildfire Fire Fuel Types - Public" polygons over a study area (queried in EPSG:3005).
+* `get_vri_for_fuel_typing()` pulls the VEG_COMP Rank 1 VRI attributes the bcwsft decision tree needs (queried in EPSG:3005).
+* `load_nbac_polys()` loads NBAC fire perimeters, harmonised (tolerant year + burned-area columns) and clipped to a study area.
+* `load_nfdb_points()` loads NFDB fire points clipped to a study area, optionally tagged with a fire-ecoregion `EcoCode`.
+* `load_nfdb_polys()` loads NFDB fire polygons, filtered and clipped to a study area (tolerant year column).
+* `normalize_fbp_codes()` collapses bcwsft season/leaf fuel-type codes to the provincial Public vocabulary.
+* `plot_fuel_typing_comparison()` plots the fuel-typing confusion matrix as a PNG heatmap.
+* `prep_fuel_types_rast()` rasterises the provincial fuel layer to a rasterToMatch, clipped + optionally disturbance-masked.
+* `run_bcwsft_fuel_typing()` runs the (Suggests-only) bcwsft R port over a VRI sf and attaches the assigned FBP fuel type.
+
 # landisbc 0.0.3
 
 * `CreateLandisFiles()` gains a `species_mapping` argument (default `species_map_bc_vri`) and passes it through to `ProcessInitialCommunitiesData()`; previously the top-level entry point called `ProcessInitialCommunitiesData()` without the (then mandatory) `species_mapping`, so it errored on use.

@@ -1,0 +1,35 @@
+Package: landisbc
+Type: Package
+Title: British Columbia Study-Area Tools for LANDIS-II Workflows
+Description: Province of British Columbia data-preparation helpers for
+    'LANDIS-II' forest-landscape simulation workflows -- for example, deriving
+    observed fire-severity distributions from provincial burn-severity data for
+    Dynamic Fire calibration. Companion to 'landisutils' (the study-area-agnostic
+    'LANDIS-II' tooling); BC-specific data sources and mappings live here so they
+    can be reused across British Columbia projects.
+URL: https://github.com/FOR-CAST/landisbc
+BugReports: https://github.com/FOR-CAST/landisbc/issues
+Version: 0.0.1
+Authors@R: c(
+    person("Alex M", "Chubaty", email = "achubaty@for-cast.ca",
+           role = c("aut", "cre"), comment = c(ORCID = "0000-0001-7146-8135"))
+    )
+Depends:
+    R (>= 4.2)
+Imports:
+    bcdata,
+    dplyr,
+    sf,
+    stats
+Suggests:
+    testthat (>= 3.0.0),
+    withr
+ByteCompile: yes
+Encoding: UTF-8
+Language: en-CA
+LazyData: true
+License: Apache License (>= 2)
+Roxygen: list(markdown = TRUE)
+Config/testthat/edition: 3
+Config/roxygen2/version: 8.0.0
+RoxygenNote: 8.0.0

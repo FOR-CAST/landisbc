@@ -26,13 +26,14 @@ at LANDIS-II sim time. \code{NA}, \code{""}, and the literal string \code{"NA"} 
 \code{""} so VRI rows without a second species drop cleanly downstream.
 }
 \details{
-For Interior Cedar-Hemlock study areas, pass \link{species_map_bc_ich}
-directly. For other study areas, define a comparable named character
-vector (see \link{species_map_bc_ich} for the structure, or
-\verb{c(landisbc::species_map_bc_ich, <new codes>)} to extend the ICH defaults).
+Pass \link{species_map_bc_vri} (the province-wide one-to-one VRI code
+normalisation) as \code{mapping}, optionally layered with study-area-specific
+lumping via a named-vector merge (see \link{species_map_bc_vri} for the
+structure, or \verb{c(landisbc::species_map_bc_vri, <new codes>)} to override or
+extend it for a particular study area's \code{species.txt}).
 }
 \seealso{
-\link{species_map_bc_ich}
+\link{species_map_bc_vri}
 
 Other BC VRI to LANDIS-II initial communities:
 \code{\link[=CleanMapCodes]{CleanMapCodes()}},

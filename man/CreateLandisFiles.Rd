@@ -17,6 +17,7 @@ CreateLandisFiles(
   InitialCommunitiesTxt,
   EcoRegionsMap,
   EcoRegionsTxt,
+  species_mapping = species_map_bc_vri,
   n_species = 2L
 )
 }
@@ -44,6 +45,10 @@ CreateLandisFiles(
 \item{EcoRegionsMap}{Output path for the ecoregions GeoTIFF.}
 
 \item{EcoRegionsTxt}{Output path for the ecoregions text file.}
+
+\item{species_mapping}{Named character vector (raw VRI code -> cleaned
+\code{species.txt} code) passed to \code{\link[=ProcessInitialCommunitiesData]{ProcessInitialCommunitiesData()}}. Defaults to
+the province-wide \link{species_map_bc_vri}; layer study-area lumping on top.}
 
 \item{n_species}{Number of species/age field pairs per VRI feature (default 2).}
 }

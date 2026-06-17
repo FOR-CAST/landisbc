@@ -73,10 +73,11 @@
 #' at LANDIS-II sim time. `NA`, `""`, and the literal string `"NA"` return
 #' `""` so VRI rows without a second species drop cleanly downstream.
 #'
-#' For Interior Cedar-Hemlock study areas, pass [species_map_bc_ich]
-#' directly. For other study areas, define a comparable named character
-#' vector (see [species_map_bc_ich] for the structure, or
-#' `c(landisbc::species_map_bc_ich, <new codes>)` to extend the ICH defaults).
+#' Pass [species_map_bc_vri] (the province-wide one-to-one VRI code
+#' normalisation) as `mapping`, optionally layered with study-area-specific
+#' lumping via a named-vector merge (see [species_map_bc_vri] for the
+#' structure, or `c(landisbc::species_map_bc_vri, <new codes>)` to override or
+#' extend it for a particular study area's `species.txt`).
 #'
 #' @param SpeciesCode Character scalar. One raw VRI species code.
 #' @param mapping Named character vector. Names are raw VRI codes
@@ -85,7 +86,7 @@
 #'   (e.g. `"Hw"`, `"Pl"`).
 #'
 #' @returns Character scalar. Either the cleaned code or `""` for NA / empty.
-#' @seealso [species_map_bc_ich]
+#' @seealso [species_map_bc_vri]
 #' @family BC VRI to LANDIS-II initial communities
 #' @export
 CleanUpSpeciesCodeLayer <- function(SpeciesCode, mapping) {
@@ -105,7 +106,7 @@ CleanUpSpeciesCodeLayer <- function(SpeciesCode, mapping) {
   if (is.na(out)) {
     stop(
       sprintf(
-        "CleanUpSpeciesCodeLayer(): VRI species code '%s' is not in the supplied mapping. Add it to your `mapping` argument (see `?landisbc::species_map_bc_ich` for the ICH template) or filter it upstream.",
+        "CleanUpSpeciesCodeLayer(): VRI species code '%s' is not in the supplied mapping. Add it to your `mapping` argument (see `?landisbc::species_map_bc_vri` for the BC VRI template) or filter it upstream.",
         SpeciesCode
       ),
       call. = FALSE
@@ -239,8 +240,8 @@ CreateInitialCommunitiesData <- function(LandisGrid, VRI1FilePath, n_species = 2
 #' @param species_mapping         Named character vector passed through to
 #'   [CleanUpSpeciesCodeLayer()]. Names are raw VRI codes; values are the
 #'   cleaned target codes that appear in the study area's LANDIS-II
-#'   `species.txt`. For Interior Cedar-Hemlock studies, pass
-#'   [species_map_bc_ich] directly.
+#'   `species.txt`. Defaults to the province-wide [species_map_bc_vri];
+#'   layer study-area-specific lumping on top via a named-vector merge.
 #' @param n_species               Number of species/age field pairs to detect (default 2).
 #'
 #' @return data.frame with columns: MapCode (character), SpeciesCode, Age (integer).
@@ -251,7 +252,7 @@ ProcessInitialCommunitiesData <- function(
   AgeBinSize,
   grid_size,
   SliverThreshold,
-  species_mapping,
+  species_mapping = species_map_bc_vri,
   n_species = 2L
 ) {
   SliverThresholdArea <- grid_size * grid_size * SliverThreshold / 100
@@ -867,6 +868,9 @@ WriteEcoRegionsTextFile <- function(dicBECCodes, EcoRegionsTxt) {
 #' @param InitialCommunitiesTxt  Output path for the initial communities text file.
 #' @param EcoRegionsMap          Output path for the ecoregions GeoTIFF.
 #' @param EcoRegionsTxt          Output path for the ecoregions text file.
+#' @param species_mapping        Named character vector (raw VRI code -> cleaned
+#'   `species.txt` code) passed to [ProcessInitialCommunitiesData()]. Defaults to
+#'   the province-wide [species_map_bc_vri]; layer study-area lumping on top.
 #' @param n_species              Number of species/age field pairs per VRI feature (default 2).
 #'
 #' @return Invisibly NULL (writes four files as a side effect).
@@ -885,6 +889,7 @@ CreateLandisFiles <- function(
   InitialCommunitiesTxt,
   EcoRegionsMap,
   EcoRegionsTxt,
+  species_mapping = species_map_bc_vri,
   n_species = 2L
 ) {
   message("Creating Landis Grid")
@@ -900,6 +905,7 @@ CreateLandisFiles <- function(
     AgeBinSize,
     grid_size,
     SliverThreshold,
+    species_mapping = species_mapping,
     n_species = n_species
   )
 
@@ -914,6 +920,7 @@ CreateLandisFiles <- function(
       AgeBinSize,
       grid_size,
       SliverThreshold,
+      species_mapping = species_mapping,
       n_species = n_species
     )
   } else {

@@ -22,12 +22,7 @@ Useful links:
 Authors:
 \itemize{
   \item Alex M Chubaty \email{achubaty@for-cast.ca} (\href{https://orcid.org/0000-0001-7146-8135}{ORCID})
-  \item  Unknown (Original Python arcpy implementation of the VRI-to-initial-communities pipeline (provenance unknown; received via Flora Krivak-Tetley))
-}
-
-Other contributors:
-\itemize{
-  \item Flora Krivak-Tetley (BC species-code edits in CleanUpSpeciesCodeLayer (passed through from a third-party Python source)) [contributor]
+  \item  Unknown (Original Python arcpy implementation of the VRI-to-initial-communities pipeline (provenance unknown))
 }
 
 }

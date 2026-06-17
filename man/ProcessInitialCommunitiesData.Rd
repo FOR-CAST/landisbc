@@ -9,7 +9,7 @@ ProcessInitialCommunitiesData(
   AgeBinSize,
   grid_size,
   SliverThreshold,
-  species_mapping,
+  species_mapping = species_map_bc_vri,
   n_species = 2L
 )
 }
@@ -25,8 +25,8 @@ ProcessInitialCommunitiesData(
 \item{species_mapping}{Named character vector passed through to
 \code{\link[=CleanUpSpeciesCodeLayer]{CleanUpSpeciesCodeLayer()}}. Names are raw VRI codes; values are the
 cleaned target codes that appear in the study area's LANDIS-II
-\code{species.txt}. For Interior Cedar-Hemlock studies, pass
-\link{species_map_bc_ich} directly.}
+\code{species.txt}. Defaults to the province-wide \link{species_map_bc_vri};
+layer study-area-specific lumping on top via a named-vector merge.}
 
 \item{n_species}{Number of species/age field pairs to detect (default 2).}
 }

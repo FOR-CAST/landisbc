@@ -1,3 +1,7 @@
+# landisbc 0.0.6
+
+* `get_bc_burn_severity_polys()` now reprojects the scope to EPSG:3005 before the bcdata `INTERSECTS` query (bcdata falls back to the geometry bounding box for large scopes, and a non-3005 scope yielded the wrong box and silently returned zero features), and returns an empty sf with the expected schema when no severity is found (an empty bcdata result collapses to geometry-only, which broke the downstream `mutate`).
+
 # landisbc 0.0.5
 
 * `get_bc_burn_severity_polys()` now reprojects the bcdata result to the scope CRS before `st_crop()` (it was cropping the EPSG:3005 query result against a project-CRS scope, erroring with "st_crs(x) == st_crs(y) is not TRUE").

@@ -33,13 +33,25 @@
 #' @family BC fire severity
 #' @export
 get_bc_burn_severity_polys <- function(scope_polys, fire_years) {
-  bcdata::bcdc_query_geodata("c58a54e5-76b7-4921-94a7-b5998484e697") |>
-    dplyr::filter(INTERSECTS(scope_polys), FIRE_YEAR %in% fire_years) |>
+  ## Query the WFS in the layer CRS (EPSG:3005). bcdata's INTERSECTS falls back to the geometry's
+  ## BOUNDING BOX for large scopes, and a non-3005 scope yields the wrong box -> a silent zero-feature
+  ## result. Reproject the scope to 3005 for the query, then bring the result back to the scope CRS.
+  scope_3005 <- sf::st_transform(scope_polys, 3005)
+  result <- bcdata::bcdc_query_geodata("c58a54e5-76b7-4921-94a7-b5998484e697") |>
+    dplyr::filter(INTERSECTS(scope_3005), FIRE_YEAR %in% fire_years) |>
     dplyr::select(FIRE_NUMBER, FIRE_YEAR, BURN_SEVERITY_RATING) |>
-    dplyr::collect() |>
-    ## reproject to the scope CRS BEFORE cropping: bcdc_query_geodata returns the layer in EPSG:3005,
-    ## but scope_polys is in the project CRS, so st_crop(scope_polys) on the un-transformed result
-    ## errors with "st_crs(x) == st_crs(y) is not TRUE".
+    dplyr::collect()
+  ## An empty bcdata result collapses to a geometry-only sf (no attribute columns), so return an empty
+  ## sf with the expected schema rather than erroring downstream on a missing BURN_SEVERITY_RATING.
+  if (nrow(result) == 0L) {
+    return(sf::st_sf(
+      FIRE_NUMBER = character(0),
+      FIRE_YEAR = integer(0),
+      BURN_SEVERITY_RATING = factor(character(0)),
+      geometry = sf::st_sfc(crs = sf::st_crs(scope_polys))
+    ))
+  }
+  result |>
     sf::st_transform(sf::st_crs(scope_polys)) |>
     sf::st_set_agr("constant") |>
     sf::st_crop(scope_polys) |>

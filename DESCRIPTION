@@ -11,7 +11,7 @@ Description: Province of British Columbia data-preparation helpers for
     Columbia projects.
 URL: https://github.com/FOR-CAST/landisbc
 BugReports: https://github.com/FOR-CAST/landisbc/issues
-Version: 0.0.5
+Version: 0.0.6
 Authors@R: c(
     person("Alex M", "Chubaty", email = "achubaty@for-cast.ca",
            role = c("aut", "cre"), comment = c(ORCID = "0000-0001-7146-8135")),

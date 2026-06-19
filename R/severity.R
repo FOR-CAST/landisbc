@@ -37,9 +37,12 @@ get_bc_burn_severity_polys <- function(scope_polys, fire_years) {
     dplyr::filter(INTERSECTS(scope_polys), FIRE_YEAR %in% fire_years) |>
     dplyr::select(FIRE_NUMBER, FIRE_YEAR, BURN_SEVERITY_RATING) |>
     dplyr::collect() |>
+    ## reproject to the scope CRS BEFORE cropping: bcdc_query_geodata returns the layer in EPSG:3005,
+    ## but scope_polys is in the project CRS, so st_crop(scope_polys) on the un-transformed result
+    ## errors with "st_crs(x) == st_crs(y) is not TRUE".
+    sf::st_transform(sf::st_crs(scope_polys)) |>
     sf::st_set_agr("constant") |>
     sf::st_crop(scope_polys) |>
-    sf::st_transform(sf::st_crs(scope_polys)) |>
     dplyr::mutate(BURN_SEVERITY_RATING = as.factor(BURN_SEVERITY_RATING))
 }
 

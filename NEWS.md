@@ -1,3 +1,7 @@
+# landisbc 0.0.5
+
+* `get_bc_burn_severity_polys()` now reprojects the bcdata result to the scope CRS before `st_crop()` (it was cropping the EPSG:3005 query result against a project-CRS scope, erroring with "st_crs(x) == st_crs(y) is not TRUE").
+
 # landisbc 0.0.4
 
 * New BC fire-and-fuel data helpers, de-duplicated from shared BC_HRV / gitanyow-partial-harvest code: the loaders tolerate either project's column names (e.g. `YEAR`/`FIRE_YEAR`, `ADJ_HA`/`POLY_HA`/`HECTARES`), the fuel-typing WFS query is done in EPSG:3005 (robust to a non-standard sim CRS), and fuel-type area is computed from the raster resolution (not hardcoded per-cell).

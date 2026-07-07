@@ -1,3 +1,7 @@
+# landisbc 0.0.7
+
+* CanLaBS v2 (Canada Landsat Burned Severity) integration for the Dynamic Fire `L_severity` loss, complementing the BC Fire Burn Severity layer ("Option B"): `get_canlabs_dnbr()` loads the staged national dNBR mosaic cropped/masked to a scope, salvage-masked, and year-filtered via the caller's NBAC perimeters; `fit_canlabs_thresholds()` fits two dNBR breakpoints that reproduce the BC Low/Medium/High area fractions over the years both datasets cover (BC calibrates the thresholds, CanLaBS supplies the longer 1985-2024 record); `classify_canlabs_dnbr()` and `compute_observed_severity_dist_canlabs()` produce the LANDIS 1..5 observed distribution via the same `bc_to_landis_severity_map()` trapezoid kernel, so the return contract matches `compute_observed_severity_dist()`. The threshold fit is empirical (data-quantile based), so it is invariant to whether the product stores raw or scaled dNBR. `canlabs_v2_files()` records the layer filenames. The end-to-end fetch needs a real pipeline run against the staged rasters; the classification/fit/distribution logic is unit-tested.
+
 # landisbc 0.0.6
 
 * `get_bc_burn_severity_polys()` now reprojects the scope to EPSG:3005 before the bcdata `INTERSECTS` query (bcdata falls back to the geometry bounding box for large scopes, and a non-3005 scope yielded the wrong box and silently returned zero features), and returns an empty sf with the expected schema when no severity is found (an empty bcdata result collapses to geometry-only, which broke the downstream `mutate`).

@@ -22,6 +22,14 @@
 #' so consuming projects can decide how to handle each variant based on
 #' their study area's LANDIS-II `species.txt`.
 #'
+#' Each entry carries an inline common-name comment. Names marked `(BC)`
+#' are the `Description` field of the Province of BC tree species code
+#' list; the remainder are genus-level or unspecified VRI codes that the
+#' provincial list does not enumerate, and their names are informational
+#' only. Take care with the broadleaf codes in particular: `DR` is red
+#' alder (*Alnus rubra*), NOT a Douglas-fir code, and `SXS` is a Sitka
+#' hybrid rather than an interior-spruce hybrid.
+#'
 #' Pass this map directly to [CleanUpSpeciesCodeLayer()] /
 #' [ProcessInitialCommunitiesData()] only if your study area has a
 #' `species.txt` slot for every Title-case form here. In practice every
@@ -57,53 +65,57 @@
 #' @format Named `character` vector of length 30 (currently). Names are
 #'   raw VRI `SPECIES_CD_N` codes (uppercase); values are the
 #'   Title-case canonical form.
+#' @source Province of British Columbia tree species codes,
+#'   <https://www2.gov.bc.ca/gov/content/industry/forestry/managing-our-forest-resources/tree-seed/tree-seed-centre/seed-testing/codes>
 #' @family BC VRI to LANDIS-II initial communities
 #' @seealso [CleanUpSpeciesCodeLayer()], [ProcessInitialCommunitiesData()]
 #' @export
 species_map_bc_vri <- c(
   ## Broadleaf
-  AC = "Ac", ## black cottonwood
-  ACB = "Acb", ## black cottonwood variant
-  ACT = "Act", ## black cottonwood variant
-  AT = "At", ## trembling aspen
-  E = "E", ## generic birch
-  EP = "Ep", ## paper birch
-  MB = "Mb", ## bigleaf maple
+  ## Common names marked (BC) are the Description field of the Province of BC
+  ## tree species code list; the rest are unlisted VRI genus-level codes.
+  AC = "Ac", ## poplar (BC)
+  ACB = "Acb", ## balsam poplar (not in the BC list)
+  ACT = "Act", ## black cottonwood (BC)
+  AT = "At", ## trembling aspen (BC)
+  DR = "Dr", ## red alder (BC) -- Alnus rubra, NOT a Douglas-fir code
+  E = "E", ## birch, unspecified (not in the BC list)
+  EP = "Ep", ## paper birch (BC)
+  MB = "Mb", ## bigleaf maple (BC)
 
   ## Conifers -- firs
-  B = "B", ## generic / unspecified fir
-  BA = "Ba", ## amabilis fir
-  BL = "Bl", ## subalpine fir
+  B = "B", ## fir, unspecified (not in the BC list)
+  BA = "Ba", ## amabilis fir (BC)
+  BL = "Bl", ## subalpine fir (BC)
 
   ## Conifers -- cedar
-  CW = "Cw", ## western redcedar
+  CW = "Cw", ## western redcedar (BC)
 
   ## Conifers -- Douglas-fir
-  DR = "Dr", ## Douglas-fir variant
-  FD = "Fd", ## Douglas-fir
-  FDI = "Fdi", ## interior Douglas-fir
+  FD = "Fd", ## Douglas-fir, unspecified (not in the BC list; cf. FDC / FDI)
+  FDI = "Fdi", ## Douglas-fir, interior (BC)
 
   ## Conifers -- hemlocks
-  H = "H", ## generic / unspecified hemlock
-  HM = "Hm", ## mountain hemlock
-  HW = "Hw", ## western hemlock
+  H = "H", ## hemlock, unspecified (not in the BC list)
+  HM = "Hm", ## mountain hemlock (BC)
+  HW = "Hw", ## western hemlock (BC)
 
   ## Conifers -- larches
-  LA = "La", ## alpine larch
-  LT = "Lt", ## tamarack
-  LW = "Lw", ## western larch
+  LA = "La", ## alpine larch (BC)
+  LT = "Lt", ## tamarack (BC)
+  LW = "Lw", ## western larch (BC)
 
   ## Conifers -- pines
-  PL = "Pl", ## lodgepole pine
-  PLC = "Plc", ## coastal lodgepole pine
-  PLI = "Pli", ## interior lodgepole pine
+  PL = "Pl", ## lodgepole pine, unspecified (not in the BC list; cf. PLC / PLI)
+  PLC = "Plc", ## lodgepole pine, coast (BC)
+  PLI = "Pli", ## lodgepole pine, interior (BC)
 
   ## Conifers -- spruces
-  S = "S", ## generic / unspecified spruce
-  SA = "Sa", ## spruce variant
-  SE = "Se", ## Engelmann spruce
-  SS = "Ss", ## Sitka spruce
-  SW = "Sw", ## spruce variant
-  SX = "Sx", ## interior spruce (Engelmann x white hybrid)
-  SXS = "Sxs" ## interior spruce hybrid variant
+  S = "S", ## spruce, unspecified (not in the BC list)
+  SA = "Sa", ## spruce, unspecified variant (not in the BC list)
+  SE = "Se", ## Engelmann spruce (not in the BC list)
+  SS = "Ss", ## Sitka spruce (BC)
+  SW = "Sw", ## white spruce (not in the BC list)
+  SX = "Sx", ## spruce hybrid (BC)
+  SXS = "Sxs" ## Sitka x unknown hybrid (BC)
 )

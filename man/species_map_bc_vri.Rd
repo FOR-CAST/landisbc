@@ -8,6 +8,10 @@ Named \code{character} vector of length 30 (currently). Names are
 raw VRI \code{SPECIES_CD_N} codes (uppercase); values are the
 Title-case canonical form.
 }
+\source{
+Province of British Columbia tree species codes,
+\url{https://www2.gov.bc.ca/gov/content/industry/forestry/managing-our-forest-resources/tree-seed/tree-seed-centre/seed-testing/codes}
+}
 \usage{
 species_map_bc_vri
 }
@@ -22,6 +26,14 @@ so consuming projects can decide how to handle each variant based on
 their study area's LANDIS-II \code{species.txt}.
 }
 \details{
+Each entry carries an inline common-name comment. Names marked \code{(BC)}
+are the \code{Description} field of the Province of BC tree species code
+list; the remainder are genus-level or unspecified VRI codes that the
+provincial list does not enumerate, and their names are informational
+only. Take care with the broadleaf codes in particular: \code{DR} is red
+alder (\emph{Alnus rubra}), NOT a Douglas-fir code, and \code{SXS} is a Sitka
+hybrid rather than an interior-spruce hybrid.
+
 Pass this map directly to \code{\link[=CleanUpSpeciesCodeLayer]{CleanUpSpeciesCodeLayer()}} /
 \code{\link[=ProcessInitialCommunitiesData]{ProcessInitialCommunitiesData()}} only if your study area has a
 \code{species.txt} slot for every Title-case form here. In practice every

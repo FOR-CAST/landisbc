@@ -100,3 +100,28 @@ test_that("fit_canlabs_thresholds() errors when BC has no burned classes", {
   )
   expect_error(fit_canlabs_thresholds(make_dnbr(), bc), "no BC burned polygons")
 })
+
+test_that(".severity_year_chunks() drops uncovered years and batches the rest", {
+  ## the project's fire window starts decades before the layer exists
+  expect_message(
+    chunks <- .severity_year_chunks(1950:2024, years_per_request = 5L),
+    "dropping 65 fire year\\(s\\) before 2015"
+  )
+  expect_equal(unlist(chunks), 2015:2024)
+  expect_equal(lengths(chunks), c(5L, 5L))
+
+  ## exact multiples, remainders, and a single year
+  expect_equal(lengths(.severity_year_chunks(2015:2024, 2L)), rep(2L, 5L))
+  expect_equal(lengths(suppressMessages(.severity_year_chunks(2013:2024, 4L))), c(4L, 4L, 2L))
+  expect_equal(.severity_year_chunks(2020, 5L), list(2020L))
+
+  ## duplicates and unsorted input collapse to a sorted unique window
+  expect_equal(.severity_year_chunks(c(2018, 2016, 2018, 2017), 10L), list(2016:2018))
+
+  ## nothing covered -> empty list, so the caller returns the empty-schema sf without querying
+  expect_length(suppressMessages(.severity_year_chunks(1990:2000, 5L)), 0L)
+  expect_length(.severity_year_chunks(integer(0), 5L), 0L)
+
+  ## a nonsense chunk size still yields one year per request rather than dividing by zero
+  expect_equal(lengths(.severity_year_chunks(2015:2017, 0L)), rep(1L, 3L))
+})

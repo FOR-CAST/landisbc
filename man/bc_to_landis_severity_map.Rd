@@ -31,6 +31,7 @@ ordering of the BC classification.
 }
 \seealso{
 Other BC fire severity:
+\code{\link{BC_SEVERITY_FIRST_YEAR}},
 \code{\link[=compute_observed_severity_dist]{compute_observed_severity_dist()}},
 \code{\link[=get_bc_burn_severity_polys]{get_bc_burn_severity_polys()}}
 }

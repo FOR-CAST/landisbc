@@ -22,9 +22,21 @@
 #' layer (Forests catalogue record `c58a54e5-76b7-4921-94a7-b5998484e697`,
 #' object `WHSE_FOREST_VEGETATION.VEG_BURN_SEVERITY_SP`).
 #'
+#' **Request size.** The fetch is split into one WFS request per `years_per_request`
+#' fire years, and years before coverage begins are dropped entirely. A single
+#' request spanning a regional scope and a long year window is liable to be
+#' rejected outright ("There was an issue sending this WFS request") -- a
+#' district-scale scope crossed with a 75-year window put the whole province in
+#' the `INTERSECTS` box and enumerated 75 values in the `CQL_FILTER`. Chunking
+#' keeps each request small enough to be served, and a failure costs one chunk
+#' rather than the whole fetch.
+#'
 #' @param scope_polys `sf` POLYGON in the project CRS (e.g. BC Albers) covering
 #'   the fire-regime ecoregion(s) the calibration targets.
-#' @param fire_years Integer vector of fire years.
+#' @param fire_years Integer vector of fire years. Years before
+#'   `BC_SEVERITY_FIRST_YEAR` carry no data and are dropped before querying.
+#' @param years_per_request Fire years per WFS request (default `5`). Lower it if
+#'   the service rejects requests for a very large `scope_polys`.
 #'
 #' @returns An `sf` data frame with columns `FIRE_NUMBER`, `FIRE_YEAR`,
 #'   `BURN_SEVERITY_RATING` (factor: Unburned / Low / Medium / High / Unknown)
@@ -32,30 +44,75 @@
 #'
 #' @family BC fire severity
 #' @export
-get_bc_burn_severity_polys <- function(scope_polys, fire_years) {
+get_bc_burn_severity_polys <- function(scope_polys, fire_years, years_per_request = 5L) {
+  empty <- sf::st_sf(
+    FIRE_NUMBER = character(0),
+    FIRE_YEAR = integer(0),
+    BURN_SEVERITY_RATING = factor(character(0)),
+    geometry = sf::st_sfc(crs = sf::st_crs(scope_polys))
+  )
+  chunks <- .severity_year_chunks(fire_years, years_per_request)
+  if (!length(chunks)) {
+    return(empty)
+  }
+
   ## Query the WFS in the layer CRS (EPSG:3005). bcdata's INTERSECTS falls back to the geometry's
   ## BOUNDING BOX for large scopes, and a non-3005 scope yields the wrong box -> a silent zero-feature
   ## result. Reproject the scope to 3005 for the query, then bring the result back to the scope CRS.
   scope_3005 <- sf::st_transform(scope_polys, 3005)
-  result <- bcdata::bcdc_query_geodata("c58a54e5-76b7-4921-94a7-b5998484e697") |>
-    dplyr::filter(INTERSECTS(scope_3005), FIRE_YEAR %in% fire_years) |>
-    dplyr::select(FIRE_NUMBER, FIRE_YEAR, BURN_SEVERITY_RATING) |>
-    dplyr::collect()
-  ## An empty bcdata result collapses to a geometry-only sf (no attribute columns), so return an empty
-  ## sf with the expected schema rather than erroring downstream on a missing BURN_SEVERITY_RATING.
-  if (nrow(result) == 0L) {
-    return(sf::st_sf(
-      FIRE_NUMBER = character(0),
-      FIRE_YEAR = integer(0),
-      BURN_SEVERITY_RATING = factor(character(0)),
-      geometry = sf::st_sfc(crs = sf::st_crs(scope_polys))
-    ))
+  parts <- lapply(chunks, function(yrs) {
+    res <- bcdata::bcdc_query_geodata("c58a54e5-76b7-4921-94a7-b5998484e697") |>
+      dplyr::filter(INTERSECTS(scope_3005), FIRE_YEAR %in% yrs) |>
+      dplyr::select(FIRE_NUMBER, FIRE_YEAR, BURN_SEVERITY_RATING) |>
+      dplyr::collect()
+    ## An empty bcdata result collapses to a geometry-only sf (no attribute columns); drop it rather
+    ## than rbind()-ing a schema-less frame onto the others.
+    if (nrow(res) == 0L) NULL else res
+  })
+  parts <- Filter(Negate(is.null), parts)
+  if (!length(parts)) {
+    return(empty)
   }
-  result |>
+
+  do.call(rbind, parts) |>
     sf::st_transform(sf::st_crs(scope_polys)) |>
     sf::st_set_agr("constant") |>
     sf::st_crop(scope_polys) |>
     dplyr::mutate(BURN_SEVERITY_RATING = as.factor(BURN_SEVERITY_RATING))
+}
+
+#' First fire year with BC Fire Burn Severity coverage
+#'
+#' The layer is derived from pre/post-fire Landsat differencing and simply does
+#' not extend earlier: querying `FIRE_YEAR` 2010 or 2014 returns no records,
+#' 2015 onward do (verified against the live layer). Fire windows in this project
+#' routinely start decades earlier, so [get_bc_burn_severity_polys()] drops the
+#' uncovered years instead of enumerating them in the `CQL_FILTER` for nothing --
+#' a 1950:2024 window is 75 enumerated values of which 65 can never match.
+#'
+#' @family BC fire severity
+#' @export
+BC_SEVERITY_FIRST_YEAR <- 2015L
+
+## Split a requested fire-year window into per-request year groups, dropping years the layer does not
+## cover. Returns an empty list when nothing is left to query (so the caller can short-circuit).
+.severity_year_chunks <- function(fire_years, years_per_request = 5L) {
+  yrs <- sort(unique(as.integer(fire_years)))
+  yrs <- yrs[!is.na(yrs)]
+  covered <- yrs[yrs >= BC_SEVERITY_FIRST_YEAR]
+  dropped <- length(yrs) - length(covered)
+  if (dropped > 0L) {
+    message(sprintf(
+      "get_bc_burn_severity_polys(): dropping %d fire year(s) before %d (no BC severity coverage)",
+      dropped,
+      BC_SEVERITY_FIRST_YEAR
+    ))
+  }
+  if (!length(covered)) {
+    return(list())
+  }
+  n <- max(1L, as.integer(years_per_request))
+  unname(split(covered, ceiling(seq_along(covered) / n)))
 }
 
 #' BC -> LANDIS Dynamic Fire severity-class mapping

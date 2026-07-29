@@ -32,6 +32,7 @@ severity, not a study-area-specific one.
 }
 \seealso{
 Other BC fire severity:
+\code{\link{BC_SEVERITY_FIRST_YEAR}},
 \code{\link[=bc_to_landis_severity_map]{bc_to_landis_severity_map()}},
 \code{\link[=get_bc_burn_severity_polys]{get_bc_burn_severity_polys()}}
 }

@@ -4,13 +4,17 @@
 \alias{get_bc_burn_severity_polys}
 \title{Fetch BC Fire Burn Severity (Historical) polygons via bcdata}
 \usage{
-get_bc_burn_severity_polys(scope_polys, fire_years)
+get_bc_burn_severity_polys(scope_polys, fire_years, years_per_request = 5L)
 }
 \arguments{
 \item{scope_polys}{\code{sf} POLYGON in the project CRS (e.g. BC Albers) covering
 the fire-regime ecoregion(s) the calibration targets.}
 
-\item{fire_years}{Integer vector of fire years.}
+\item{fire_years}{Integer vector of fire years. Years before
+\code{BC_SEVERITY_FIRST_YEAR} carry no data and are dropped before querying.}
+
+\item{years_per_request}{Fire years per WFS request (default \code{5}). Lower it if
+the service rejects requests for a very large \code{scope_polys}.}
 }
 \value{
 An \code{sf} data frame with columns \code{FIRE_NUMBER}, \code{FIRE_YEAR},
@@ -40,9 +44,19 @@ no observed severity data.
 The bcdata source is the Province of BC "Fire Burn Severity (Historical)"
 layer (Forests catalogue record \verb{c58a54e5-76b7-4921-94a7-b5998484e697},
 object \code{WHSE_FOREST_VEGETATION.VEG_BURN_SEVERITY_SP}).
+
+\strong{Request size.} The fetch is split into one WFS request per \code{years_per_request}
+fire years, and years before coverage begins are dropped entirely. A single
+request spanning a regional scope and a long year window is liable to be
+rejected outright ("There was an issue sending this WFS request") -- a
+district-scale scope crossed with a 75-year window put the whole province in
+the \code{INTERSECTS} box and enumerated 75 values in the \code{CQL_FILTER}. Chunking
+keeps each request small enough to be served, and a failure costs one chunk
+rather than the whole fetch.
 }
 \seealso{
 Other BC fire severity:
+\code{\link{BC_SEVERITY_FIRST_YEAR}},
 \code{\link[=bc_to_landis_severity_map]{bc_to_landis_severity_map()}},
 \code{\link[=compute_observed_severity_dist]{compute_observed_severity_dist()}}
 }

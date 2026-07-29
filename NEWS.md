@@ -1,3 +1,8 @@
+# landisbc 0.0.9
+
+* `get_bc_burn_severity_polys()` splits its fetch into one WFS request per `years_per_request` fire years (default 5) and drops fire years before coverage begins, instead of issuing a single request for the whole window. A single request spanning a regional scope and a long year window is liable to be rejected outright with "There was an issue sending this WFS request": a district-scale scope puts the whole province in the `INTERSECTS` box, and a 1950:2024 window enumerates 75 values in the `CQL_FILTER`. Chunking keeps each request servable, and a failure now costs one chunk rather than the entire fetch.
+* `BC_SEVERITY_FIRST_YEAR` (new, exported) records that BC Fire Burn Severity coverage begins in 2015 -- the layer is pre/post-fire Landsat differencing and does not extend earlier (verified against the live layer: `FIRE_YEAR` 2010 and 2014 return no records, 2015 onward do). `get_bc_burn_severity_polys()` drops uncovered years before querying, so a 1950:2024 window no longer enumerates 65 years that can never match.
+
 # landisbc 0.0.8
 
 * All function calls in `R/` are now namespaced, restoring an invariant the package documents but nine calls in `vri_to_ic.R` had broken: `ext()` and `values()` (terra), `setNames()` (stats), and `write.csv()` (utils) were called bare, so they resolved only when the calling session happened to have those packages attached. `utils` is added to `Imports`. `R CMD check` is now clean (0 errors, 0 warnings, 0 notes).

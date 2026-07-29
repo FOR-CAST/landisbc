@@ -372,6 +372,7 @@ classify_canlabs_dnbr <- function(canlabs_dnbr, thresholds) {
   ## rather than pulling every cell into memory (the clipped mosaic is large).
   ## right = FALSE gives left-closed bins [-Inf, lowmed) [lowmed, medhigh)
   ## [medhigh, Inf), matching v < lowmed / lowmed <= v < medhigh / v >= medhigh.
+  # fmt: skip
   rcl <- matrix(
     c(
       -Inf, thr[["lowmed"]], 1,
@@ -385,10 +386,7 @@ classify_canlabs_dnbr <- function(canlabs_dnbr, thresholds) {
   ft <- terra::freq(cls) ## data frame with `value` + `count` (NA excluded)
   counts <- c("1" = 0, "2" = 0, "3" = 0)
   counts[as.character(ft$value)] <- ft$count
-  stats::setNames(
-    unname(counts[c("1", "2", "3")]) * cell_ha,
-    c("Low", "Medium", "High")
-  )
+  stats::setNames(unname(counts[c("1", "2", "3")]) * cell_ha, c("Low", "Medium", "High"))
 }
 
 #' Observed severity-class distribution from CanLaBS dNBR

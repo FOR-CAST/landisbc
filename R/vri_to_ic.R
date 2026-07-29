@@ -215,7 +215,7 @@ CreateInitialCommunitiesData <- function(LandisGrid, VRI1FilePath, n_species = 2
   # terra::intersect(grid, VRI) is equivalent to:
   #   dissolve VRI by attrs → union(grid, dissolved) → filter(MapCode > 0)
   # because the final filter discards everything outside the grid anyway.
-  vri_cropped <- terra::crop(VRI1[, dissolve_fields], ext(LandisGrid))
+  vri_cropped <- terra::crop(VRI1[, dissolve_fields], terra::ext(LandisGrid))
   InitialCommunitiesData <- terra::intersect(LandisGrid[, "MapCode"], vri_cropped)
 
   # Calculate area (m²)
@@ -368,7 +368,7 @@ CleanMapCodes <- function(InitialCommunitiesDataList) {
     dplyr::mutate(CleanMapCode = as.integer(MapCode))
 
   all_codes <- dplyr::bind_rows(dplyr::select(veg_summary, MapCode, CleanMapCode), nonveg_summary)
-  setNames(as.list(all_codes$CleanMapCode), all_codes$MapCode)
+  stats::setNames(as.list(all_codes$CleanMapCode), all_codes$MapCode)
 }
 
 # ---- GetNonVegData --------------------------------------------------------------------------------------------------------------------------
@@ -441,7 +441,7 @@ GetNonVegData <- function(LandisGrid, VRI1FilePath, grid_size, dicCleanMapCodes)
     ) |>
     dplyr::filter(!(MapCode %in% names(dicCleanMapCodes) & TotalArea < area50pct))
 
-  setNames(as.list(dominant$DomCode), dominant$MapCode) # dicNonVegMapCodes in CreateLandisFiles
+  stats::setNames(as.list(dominant$DomCode), dominant$MapCode) # dicNonVegMapCodes in CreateLandisFiles
 }
 
 # ---- CreateInitialCommunitiesMap ----------------------------------------------------------------------------------------------
@@ -657,7 +657,7 @@ CreateInitialCommunitiesCSVFile <- function(
   })
 
   out <- do.call(rbind, Filter(Negate(is.null), rows))
-  write.csv(out, InitialCommunitiesCSV, row.names = FALSE, quote = FALSE)
+  utils::write.csv(out, InitialCommunitiesCSV, row.names = FALSE, quote = FALSE)
 }
 
 # ---- GetBECCodes ------------------------------------------------------------------------------------------------------------------------------
@@ -680,10 +680,10 @@ GetBECCodes <- function(BECFilePath) {
 
   # Get sorted unique BEC zone/subzone values (no geometry dissolve needed)
   # Use values() to reliably extract the column from a SpatVector
-  bec_vals <- sort(unique(values(BEC_layer)[[fieldname_bec_zone_subzone]]))
+  bec_vals <- sort(unique(terra::values(BEC_layer)[[fieldname_bec_zone_subzone]]))
   bec_vals <- as.character(bec_vals[!is.na(bec_vals) & nzchar(trimws(bec_vals))])
 
-  dicBECCODES <- setNames(as.list(seq_along(bec_vals)), bec_vals)
+  dicBECCODES <- stats::setNames(as.list(seq_along(bec_vals)), bec_vals)
 
   return(dicBECCODES)
 }
@@ -716,7 +716,7 @@ CreateEcoRegionsMap <- function(
   fieldname_bec_zone_subzone <- .bec_field(BEC_layer)
 
   # Step 2 – intersect grid with BEC (equivalent to union + filter MapCode > 0)
-  bec_cropped <- terra::crop(BEC_layer[, fieldname_bec_zone_subzone], ext(LandisGrid))
+  bec_cropped <- terra::crop(BEC_layer[, fieldname_bec_zone_subzone], terra::ext(LandisGrid))
   step2_intersect <- terra::intersect(LandisGrid[, "MapCode"], bec_cropped)
   step2_intersect$Area <- terra::expanse(step2_intersect, unit = "m")
 
@@ -746,9 +746,9 @@ CreateEcoRegionsMap <- function(
   }
 
   # Step 6 – build BEC code lookup (sorted unique values, matching GetBECCodes)
-  bec_uvals <- sort(unique(values(BEC_layer)[[fieldname_bec_zone_subzone]]))
+  bec_uvals <- sort(unique(terra::values(BEC_layer)[[fieldname_bec_zone_subzone]]))
   bec_uvals <- as.character(bec_uvals[!is.na(bec_uvals) & nzchar(trimws(bec_uvals))])
-  bec_code_vec <- setNames(seq_along(bec_uvals), bec_uvals) # named integer vector
+  bec_code_vec <- stats::setNames(seq_along(bec_uvals), bec_uvals) # named integer vector
 
   # Step 7 – update grid with BECCODE (vectorized)
   LandisGrid_out <- LandisGrid

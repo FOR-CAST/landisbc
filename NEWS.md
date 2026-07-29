@@ -1,5 +1,7 @@
 # landisbc 0.0.8
 
+* All function calls in `R/` are now namespaced, restoring an invariant the package documents but nine calls in `vri_to_ic.R` had broken: `ext()` and `values()` (terra), `setNames()` (stats), and `write.csv()` (utils) were called bare, so they resolved only when the calling session happened to have those packages attached. `utils` is added to `Imports`. `R CMD check` is now clean (0 errors, 0 warnings, 0 notes).
+
 * `species_map_bc_vri` common-name annotations are corrected against the Province of BC tree species code list, now cited in the documentation. `DR` was documented as a "Douglas-fir variant" and grouped with `FD` / `FDI`; it is red alder (*Alnus rubra*), a broadleaf hardwood, and is now grouped with the other broadleaf codes. A consuming project following the old grouping had been modelling it as a conifer. `AC` is poplar (not black cottonwood, which is `ACT`), `SXS` is a Sitka hybrid (not an interior-spruce hybrid), and `SW` is white spruce. Annotations for codes the provincial list does not enumerate are now marked as such. The mapping values themselves are unchanged, so no consuming project's results change on this bullet alone.
 * `species_map_bc_vri` gains tests covering its documented contract: names uppercase, values the Title-case form of the name, and no duplicate names or values (variant lumping belongs in consuming projects).
 

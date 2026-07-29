@@ -9,7 +9,9 @@ utils::globalVariables(c(
   "YEAR", "MONTH", "DAY", "DATE", "JULIAN_DAY", "SIZE_HA", "EcoCode",
   "MRSRD_Y", "MRSRD_A", ".data",
   ## fuel-typing confusion-matrix plot aesthetics
-  "provincial", "bcwsft", "Freq"
+  "provincial", "bcwsft", "Freq",
+  ## VRI -> initial-communities column names, referenced bare in dplyr verbs
+  "Age", "Area", "CleanMapCode", "MapCode", "SpeciesCode", "TotalArea", "hash", "lev2"
 ))
 
 #' @keywords internal

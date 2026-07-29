@@ -27,7 +27,8 @@ Imports:
     sf,
     stats,
     terra,
-    tidyterra
+    tidyterra,
+    utils
 Suggests:
     bcwsft,
     testthat (>= 3.0.0),

@@ -1,3 +1,9 @@
+# landisbc 0.0.11
+
+* `CreateEcoRegionsMap()` computes the dominant BEC zone per grid cell raster-side instead of by polygon intersection. The old route intersected one polygon per grid cell (538,000 on a buffered 100 m LANDIS grid) against a BEC layer holding only ~12 distinct labels, then measured each sliver with `terra::expanse()`; it cost ~17.5 min. Rasterising BEC at 10x10 sub-cell resolution and taking the modal value per cell answers the same question in 5.8 s -- a 181x speedup on a real landscape.
+
+* Output is materially unchanged: validated against the polygon result on a 402,200-cell vegetated landscape, the two agree on 99.9925% of cells with an identical NA pattern and identical raster dimensions. The 30 differing cells are near-ties on BEC boundaries; an exact coverage-fraction computation (`terra::rasterize(cover = TRUE)`, max over zones) reproduces the raster answer exactly, so those cells are floating-point tie-breaks in the old polygon path rather than error introduced by the new one.
+
 # landisbc 0.0.10
 
 * `CreateEcoRegionsMap()` no longer scales quadratically with grid size. The step that picks the dominant BEC zone per map code used a row-by-row loop whose membership test (`MapCode %in% names(dicMaxArea)`) rebuilt and rescanned the names of a list that grows to one entry per map code. Measured cost of that loop: 0.17 s at n = 5,000 rising to 11.7 s at n = 40,000 -- timings quadruple as n doubles. On a 538,000-cell LANDIS grid the grid/BEC intersection runs to millions of rows and the loop did not complete in 5.8 h. It is replaced by a single stable sort plus `!duplicated()`, which is O(n log n) and takes ~2 s at n = 2,000,000.

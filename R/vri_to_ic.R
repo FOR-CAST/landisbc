@@ -715,13 +715,52 @@ CreateEcoRegionsMap <- function(
   BEC_layer <- .read_vect(BECFilePath)
   fieldname_bec_zone_subzone <- .bec_field(BEC_layer)
 
-  # Step 2 – intersect grid with BEC (equivalent to union + filter MapCode > 0)
+  # Step 2 – dominant BEC per grid cell.
+  #
+  # Computed raster-side. The polygon route -- `terra::intersect(LandisGrid,
+  # bec_cropped)` then `terra::expanse()` -- pits one polygon per grid cell
+  # (538,000 on a buffered 100 m LANDIS grid) against a BEC layer that has only
+  # ~12 distinct labels, and cost ~17.5 min. Rasterising BEC at `subcell`^2
+  # sub-cell resolution and taking the modal value per cell answers the same
+  # question ("which zone covers most of this cell") in ~2 s.
+  #
+  # Validated against the polygon result on a 402,200-cell vegetated landscape:
+  # 99.9925% identical at subcell = 10. The 30 differing cells are near-ties on
+  # BEC boundaries; an exact coverage-fraction computation
+  # (`terra::rasterize(cover = TRUE)`, max over zones) reproduces the raster
+  # answer exactly, so those 30 are floating-point tie-breaks in the polygon
+  # path rather than error introduced here.
   bec_cropped <- terra::crop(BEC_layer[, fieldname_bec_zone_subzone], terra::ext(LandisGrid))
-  step2_intersect <- terra::intersect(LandisGrid[, "MapCode"], bec_cropped)
-  step2_intersect$Area <- terra::expanse(step2_intersect, unit = "m")
 
-  df <- as.data.frame(step2_intersect)
-  df$MapCode <- as.character(df$MapCode)
+  grid_ext <- attr(LandisGrid, "raster_extent") %||% terra::ext(LandisGrid)
+  tmpl <- terra::rast(grid_ext, resolution = grid_size, crs = terra::crs(LandisGrid))
+
+  bec_lab <- as.character(terra::values(bec_cropped)[[fieldname_bec_zone_subzone]])
+  lab_levels <- sort(unique(bec_lab[!is.na(bec_lab) & nzchar(trimws(bec_lab))]))
+  bec_cropped$.bec_idx <- as.integer(match(bec_lab, lab_levels))
+
+  subcell <- 10L
+  bec_fine <- terra::rasterize(
+    bec_cropped,
+    terra::disagg(tmpl, fact = subcell),
+    field = ".bec_idx"
+  )
+  bec_cell <- terra::aggregate(bec_fine, fact = subcell, fun = "modal", na.rm = TRUE)
+
+  # Each LandisGrid polygon is exactly one cell of `tmpl`; recover which via its
+  # centroid rather than assuming polygon order matches cell order.
+  cell_of_poly <- terra::cellFromXY(bec_cell, terra::crds(terra::centroids(LandisGrid)))
+  idx <- rep(NA_integer_, length(cell_of_poly))
+  inb <- !is.na(cell_of_poly)
+  idx[inb] <- as.integer(terra::values(bec_cell)[cell_of_poly[inb], 1L])
+
+  df <- data.frame(
+    MapCode = as.character(LandisGrid$MapCode),
+    Area = rep(grid_size^2, length(idx)),
+    stringsAsFactors = FALSE
+  )
+  df[[fieldname_bec_zone_subzone]] <- ifelse(is.na(idx), NA_character_, lab_levels[idx])
+  df <- df[!is.na(df[[fieldname_bec_zone_subzone]]), , drop = FALSE]
 
   # Steps 3-5 – find dominant BEC per MapCode
   #

@@ -724,25 +724,41 @@ CreateEcoRegionsMap <- function(
   df$MapCode <- as.character(df$MapCode)
 
   # Steps 3-5 – find dominant BEC per MapCode
-  dicMaxAreaBEC <- list()
-  dicMaxArea <- list()
+  #
+  # Vectorised group-max. This was a row-by-row loop whose membership test
+  # (`MapCode %in% names(dicMaxArea)`) rebuilt and rescanned the names of a list
+  # that grows to one entry per map code, making the step O(n^2): measured
+  # 0.17 s at n = 5e3, 0.68 s at 1e4, 2.7 s at 2e4, 11.7 s at 4e4. On a buffered
+  # 538k-cell LANDIS grid the intersection runs to millions of rows and the loop
+  # did not finish in 5.8 h. Sorting once and taking the first row per MapCode is
+  # O(n log n): ~2 s at n = 2e6.
+  #
+  # Semantics preserved. The loop compared with a strict `>`, so the FIRST
+  # maximum encountered won a tie; `method = "radix"` is a stable sort, so
+  # `!duplicated()` keeps that same row. `order()` places NA last, so a real
+  # maximum beats an NA area (the loop errored in that case, because it compared
+  # against a stored NA).
+  bec_chr <- as.character(df[[fieldname_bec_zone_subzone]])
+  keep_row <- !is.na(bec_chr) & nzchar(trimws(bec_chr)) & !is.na(df$MapCode)
 
-  for (i in seq_len(nrow(df))) {
-    MapCode <- df$MapCode[i]
-    Area <- df$Area[i]
-    BEC <- as.character(df[[fieldname_bec_zone_subzone]][i])
+  if (any(keep_row)) {
+    dom_mc <- df$MapCode[keep_row]
+    dom_area <- df$Area[keep_row]
+    dom_bec <- bec_chr[keep_row]
 
-    if (!is.na(BEC) && nchar(trimws(BEC)) > 0 && !is.na(MapCode)) {
-      if (MapCode %in% names(dicMaxArea)) {
-        if (!is.na(Area) && Area > dicMaxArea[[MapCode]]) {
-          dicMaxArea[[MapCode]] <- Area
-          dicMaxAreaBEC[[MapCode]] <- BEC
-        }
-      } else {
-        dicMaxArea[[MapCode]] <- Area
-        dicMaxAreaBEC[[MapCode]] <- BEC
-      }
-    }
+    ord <- order(dom_mc, -dom_area, method = "radix")
+    dom_mc <- dom_mc[ord]
+    dom_area <- dom_area[ord]
+    dom_bec <- dom_bec[ord]
+
+    first <- !duplicated(dom_mc)
+    # Kept as named LISTS: downstream indexes these by map code and relies on
+    # `[[` / `[` returning NULL for codes that are absent.
+    dicMaxArea <- as.list(stats::setNames(dom_area[first], dom_mc[first]))
+    dicMaxAreaBEC <- as.list(stats::setNames(dom_bec[first], dom_mc[first]))
+  } else {
+    dicMaxArea <- list()
+    dicMaxAreaBEC <- list()
   }
 
   # Step 6 – build BEC code lookup (sorted unique values, matching GetBECCodes)

@@ -1,3 +1,9 @@
+# landisbc 0.0.10
+
+* `CreateEcoRegionsMap()` no longer scales quadratically with grid size. The step that picks the dominant BEC zone per map code used a row-by-row loop whose membership test (`MapCode %in% names(dicMaxArea)`) rebuilt and rescanned the names of a list that grows to one entry per map code. Measured cost of that loop: 0.17 s at n = 5,000 rising to 11.7 s at n = 40,000 -- timings quadruple as n doubles. On a 538,000-cell LANDIS grid the grid/BEC intersection runs to millions of rows and the loop did not complete in 5.8 h. It is replaced by a single stable sort plus `!duplicated()`, which is O(n log n) and takes ~2 s at n = 2,000,000.
+
+* Results are unchanged. The loop compared with a strict `>` so the first maximum encountered won a tie; the replacement sorts with `method = "radix"` (stable) and keeps the first row per map code, which is the same row. `order()` places NA areas last, so a real maximum now beats an NA area rather than erroring on a comparison against a stored `NA`. Equivalence was checked over 200 randomised inputs including NA map codes, NA and tied areas, and NA / empty / whitespace BEC labels.
+
 # landisbc 0.0.9
 
 * `get_bc_burn_severity_polys()` splits its fetch into one WFS request per `years_per_request` fire years (default 5) and drops fire years before coverage begins, instead of issuing a single request for the whole window. A single request spanning a regional scope and a long year window is liable to be rejected outright with "There was an issue sending this WFS request": a district-scale scope puts the whole province in the `INTERSECTS` box, and a 1950:2024 window enumerates 75 values in the `CQL_FILTER`. Chunking keeps each request servable, and a failure now costs one chunk rather than the entire fetch.

@@ -71,6 +71,21 @@ bec_positions <- function(header) {
   )
 }
 
+#' Strip a superscript footnote marker glued onto a value.
+#'
+#' A footnote marker is typeset as a superscript immediately after the number, and `pdftotext`
+#' renders it as one more digit with no separator: Table 4's AC/BG cell reads "0.4803" carrying
+#' footnote 6 and comes back as "0.48036". Every value in these tables is published to at most
+#' `max_dp` decimals, so any digit beyond that is the marker, not precision.
+#'
+#' Truncates rather than rounds -- the extra character is not part of the number at all -- and returns
+#' the affected cells so the caller can report them instead of silently altering a published value.
+strip_footnote_markers <- function(text, max_dp = 4L) {
+  hit <- grepl(paste0("\\.[0-9]{", max_dp + 1L, ",}$"), text)
+  text[hit] <- sub(paste0("(\\.[0-9]{", max_dp, "})[0-9]+$"), "\\1", text[hit])
+  list(text = text, stripped = hit)
+}
+
 #' Parse one Sp0-by-BEC table into a matrix, assigning each value to the nearest BEC column.
 parse_table <- function(caption, allow_missing = FALSE) {
   ## The caption appears twice: once in the list of tables at the front, once above the table. Take
@@ -102,7 +117,21 @@ parse_table <- function(caption, allow_missing = FALSE) {
     m <- gregexpr("[0-9]+\\.[0-9]+|(?<=\\s)[0-9]+(?=\\s|$)", ln, perl = TRUE)[[1L]]
     starts <- as.integer(m)
     ends <- starts + attr(m, "match.length") - 1L
-    vals <- as.numeric(substring(ln, starts, ends))
+    raw <- substring(ln, starts, ends)
+    fixed <- strip_footnote_markers(raw)
+    if (any(fixed$stripped)) {
+      footnotes <<- rbind(
+        footnotes,
+        data.frame(
+          caption = caption,
+          sp0 = sp,
+          raw = raw[fixed$stripped],
+          value = fixed$text[fixed$stripped],
+          stringsAsFactors = FALSE
+        )
+      )
+    }
+    vals <- as.numeric(fixed$text)
     ## drop a leading token that is part of the Sp0 label itself (none here, but be safe)
     keep <- starts > attr(regexpr(paste0("^\\s*", sp), ln), "match.length")
     starts <- starts[keep]
@@ -121,6 +150,9 @@ parse_table <- function(caption, allow_missing = FALSE) {
   }
   out
 }
+
+## Footnote markers stripped during parsing, reported below so an altered value is never silent.
+footnotes <- NULL
 
 components <- c(
   bole = "Regression Coefficients for bole \\(wood\\) biomass",
@@ -190,11 +222,36 @@ for (cmp in c("bole", "branches", "bark", "foliage")) {
   stopifnot(all(d < 1e-9))
 }
 
+## Every published coefficient has exactly 4 decimals. Anything else means a footnote marker, a
+## column collision, or a misread digit -- the class of fault that produced 0.48036 for AC/BG before
+## strip_footnote_markers() existed. Cheap, and it fails loudly rather than shipping a wrong number.
+for (cmp in c("bole", "branches", "bark", "foliage")) {
+  v <- wide[[cmp]]
+  if (any(abs(v - round(v, 4L)) > 1e-12)) {
+    stop(
+      "coefficients carry more than 4 decimals in '",
+      cmp,
+      "': ",
+      paste(v[abs(v - round(v, 4L)) > 1e-12], collapse = ", "),
+      call. = FALSE
+    )
+  }
+}
+
+if (is.null(footnotes)) {
+  cat("no footnote markers found\n")
+} else {
+  cat("footnote markers stripped (value kept, marker discarded):\n")
+  print(footnotes, row.names = FALSE)
+}
+
 stopifnot(
   nrow(wide) == length(SP0) * length(BEC),
   !anyNA(wide$total),
   all(wide$bole > 0),
   all(wide$bole < 1),
+  ## Table 4, AC / BG: printed 0.4803 with footnote marker 6 attached.
+  isTRUE(all.equal(wide$bole[wide$sp0 == "AC" & wide$bec_zone == "BG"], 0.4803)),
   isTRUE(all.equal(max(corr_long$r, na.rm = TRUE), 1.0000))
 )
 

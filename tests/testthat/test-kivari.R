@@ -27,6 +27,18 @@ test_that("published coefficients are reproduced", {
   expect_equal(unname(f("F", "IDF")), c(0.3699, 0.1063, 0.0725, 0.0397))
 })
 
+test_that("every coefficient is published to exactly 4 decimals", {
+  ## Regression: Table 4's AC/BG cell prints 0.4803 carrying a superscript footnote marker 6, and a
+  ## naive parse read it as 0.48036. Any value with a 5th decimal means a footnote marker, a column
+  ## collision, or a misread digit -- none of which should ship.
+  for (cmp in c("bole", "branches", "bark", "foliage")) {
+    v <- kivari_volume_to_biomass[[cmp]]
+    expect_equal(v, round(v, 4L), tolerance = 0, info = cmp)
+  }
+  ac_bg <- kivari_volume_to_biomass
+  expect_equal(ac_bg$bole[ac_bg$sp0 == "AC" & ac_bg$bec_zone == "BG"], 0.4803)
+})
+
 test_that("kivari_sp0() implements the report's assignment rules", {
   ## the plain letter rules
   expect_equal(

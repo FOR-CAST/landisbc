@@ -1,3 +1,7 @@
+# landisbc 0.0.15
+
+* `kivari_volume_to_biomass` corrects one cell. Table 4's cottonwood/BG coefficient is printed as 0.4803 carrying a superscript footnote marker, which `pdftotext` renders as a sixth digit with no separator, so it was extracted as 0.48036. The extraction now strips such markers and reports every cell it altered, and both the extraction and the test suite assert that no coefficient carries more than the four decimals the report publishes. Every one of the 896 coefficients has since been checked against the rendered report pages read independently of `pdftotext`, and all now agree.
+
 # landisbc 0.0.14
 
 * New datasets carrying the published British Columbia volume-to-biomass conversion factors, so any BC project can convert stand volume to biomass without re-parsing a PDF: `kivari_volume_to_biomass` (16 species groups x 14 BEC zones, all four components plus their total), with `kivari_correlation`, `kivari_sample_frequency` and `kivari_sp0_codes` alongside it so a caller can judge how well supported a given stratum is. The tables are published only as a PDF -- a BC Data Catalogue search returns no machine-readable version -- so they are parsed programmatically in `data-raw/kivari.R` and verified there against coefficients independently in use, rather than transcribed by hand. A plain-text copy is installed under `extdata/`.

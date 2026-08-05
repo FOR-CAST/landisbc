@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">landisbc</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.16</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.17</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -55,10 +55,11 @@
 
 
 <dt id="arg-filters">filters<a class="anchor" aria-label="anchor" href="#arg-filters"></a></dt>
-<dd><p>A tibble from <code><a href="read_ground_plot_filters.html">read_ground_plot_filters()</a></code>. An optional
-<code>include_bec_labels</code> column (semicolon-delimited BEC labels) admits named
-climatic analogues from outside the species' own BEC zone; see
-<code><a href="bec_climate_analogues.html">bec_climate_analogues()</a></code>.</p></dd>
+<dd><p>A tibble from <code><a href="read_ground_plot_filters.html">read_ground_plot_filters()</a></code>. Two optional
+semicolon-delimited columns refine the selection: <code>include_bec_labels</code>
+admits named climatic analogues from outside the species' own BEC zone (see
+<code><a href="bec_climate_analogues.html">bec_climate_analogues()</a></code>), and <code>include_leading</code> restricts which raw
+species codes count for the modelled species.</p></dd>
 
 </dl></div>
     <div class="section level2">

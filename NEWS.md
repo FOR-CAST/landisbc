@@ -1,3 +1,9 @@
+# landisbc 0.0.14
+
+* New datasets carrying the published British Columbia volume-to-biomass conversion factors, so any BC project can convert stand volume to biomass without re-parsing a PDF: `kivari_volume_to_biomass` (16 species groups x 14 BEC zones, all four components plus their total), with `kivari_correlation`, `kivari_sample_frequency` and `kivari_sp0_codes` alongside it so a caller can judge how well supported a given stratum is. The tables are published only as a PDF -- a BC Data Catalogue search returns no machine-readable version -- so they are parsed programmatically in `data-raw/kivari.R` and verified there against coefficients independently in use, rather than transcribed by hand. A plain-text copy is installed under `extdata/`.
+* `kivari_sp0()` assigns BC tree species codes to those species groups, implementing the source report's own rules. Most are "anything starting with this letter", but the exceptions are the ones that matter: aspen is its own group rather than falling in with the other `A` codes, the pines split four ways, and `CP` / `CY` go to yellow cedar rather than to cedar.
+* `kivari_factor()` looks a factor up directly from species codes and BEC zones. It is vectorised and length-preserving, and returns `NA` for an unmatched species or zone rather than dropping the row, so a caller can count what did not convert.
+
 # landisbc 0.0.13
 
 * New `bec_climate_analogues()` ranks BEC labels by climatic similarity to a target, so a species whose own variant has too few ground plots to fit against can borrow from climatically comparable ones. Widening to "the same BEC zone" is the obvious move and the wrong one: zones span large climatic ranges, so a same-zone plot can be less like the target than one from a neighbouring zone. Distance is Euclidean over variables standardised by their spread across labels, otherwise precipitation in millimetres swamps temperature in degrees purely through its numeric range.

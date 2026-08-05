@@ -11,6 +11,7 @@ Province of British Columbia data-preparation helpers for 'LANDIS-II' forest-lan
 \seealso{
 Useful links:
 \itemize{
+  \item \url{https://for-cast.github.io/landisbc/}
   \item \url{https://github.com/FOR-CAST/landisbc}
   \item Report bugs at \url{https://github.com/FOR-CAST/landisbc/issues}
 }

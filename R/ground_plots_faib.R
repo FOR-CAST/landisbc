@@ -390,17 +390,33 @@ faib_leading_species_percent <- function(x) {
 #' @return A tibble, one row per species.
 #' @export
 read_ground_plot_filters <- function(path) {
-  utils::read.csv(path, stringsAsFactors = FALSE) |>
+  out <- utils::read.csv(path, stringsAsFactors = FALSE) |>
     tibble::as_tibble() |>
-    dplyr::mutate(dplyr::across(dplyr::any_of("min_leading_pct"), as.integer)) |>
-    dplyr::select(species, bec_zone, exclude_tsa, exclude_bec_label, min_leading_pct)
+    dplyr::mutate(dplyr::across(dplyr::any_of("min_leading_pct"), as.integer))
+  ## `include_bec_labels` is optional, so a table written before analogues
+  ## existed still reads.
+  if (!"include_bec_labels" %in% names(out)) {
+    out$include_bec_labels <- NA_character_
+  }
+  dplyr::select(
+    out,
+    species,
+    bec_zone,
+    include_bec_labels,
+    exclude_tsa,
+    exclude_bec_label,
+    min_leading_pct
+  )
 }
 
 #' Apply one species' ground-plot filter
 #'
 #' @param obs A tibble from [derive_ground_plot_obs()].
 #' @param species Character. Modelled species code.
-#' @param filters A tibble from [read_ground_plot_filters()].
+#' @param filters A tibble from [read_ground_plot_filters()]. An optional
+#'   `include_bec_labels` column (semicolon-delimited BEC labels) admits named
+#'   climatic analogues from outside the species' own BEC zone; see
+#'   [bec_climate_analogues()].
 #'
 #' @return `obs` restricted to that species' observations.
 #' @export
@@ -414,8 +430,20 @@ filter_ground_plot_obs <- function(obs, species, filters) {
 
   blank <- function(x) is.na(x) || !nzchar(trimws(x))
 
+  ## `include_bec_labels` ADDS analogue plots back after the zone restriction,
+  ## so a species can be held to its own zone while still admitting named
+  ## climatic analogues from outside it. Blank keeps the zone restriction alone,
+  ## which is the conservative default; see bec_climate_analogues().
+  ## NOT `f$include_bec_labels`: a tibble errors on `$` for an absent column, and
+  ## a filter table written before analogues existed will not have it.
+  extra <- if ("include_bec_labels" %in% names(f) && !blank(f[["include_bec_labels"]][[1L]])) {
+    trimws(strsplit(f[["include_bec_labels"]][[1L]], ";", fixed = TRUE)[[1L]])
+  } else {
+    character(0)
+  }
+
   if (!blank(f$bec_zone[[1L]])) {
-    out <- dplyr::filter(out, .data$bec_zone == f$bec_zone[[1L]])
+    out <- dplyr::filter(out, .data$bec_zone == f$bec_zone[[1L]] | .data$bec_label %in% extra)
   }
   if (!blank(f$exclude_tsa[[1L]])) {
     drop <- trimws(strsplit(f$exclude_tsa[[1L]], ";", fixed = TRUE)[[1L]])

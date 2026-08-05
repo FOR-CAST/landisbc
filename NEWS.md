@@ -1,3 +1,9 @@
+# landisbc 0.0.13
+
+* New `bec_climate_analogues()` ranks BEC labels by climatic similarity to a target, so a species whose own variant has too few ground plots to fit against can borrow from climatically comparable ones. Widening to "the same BEC zone" is the obvious move and the wrong one: zones span large climatic ranges, so a same-zone plot can be less like the target than one from a neighbouring zone. Distance is Euclidean over variables standardised by their spread across labels, otherwise precipitation in millimetres swamps temperature in degrees purely through its numeric range.
+* Choosing the anchor is left to the caller because it is consequential and easy to get wrong: anchoring on the plots carrying the target variant's name fails where those plots are few and unrepresentative of the landscape being modelled, in which case that landscape's own climate is the better anchor. Compute both and compare.
+* `bec_analogue_labels()` turns a ranking plus a distance cut-off into the string `include_bec_labels` expects, and `filter_ground_plot_obs()` gains that optional column: it admits named analogues back after the BEC-zone restriction, so a species can be held to its own zone while still borrowing. Blank keeps the zone restriction alone, which stays the default.
+
 # landisbc 0.0.12
 
 * New helpers for assembling BC ground-plot observations for growth-curve calibration, extracted from a project that had them inline. `fetch_faib_ground_plots()` and `assemble_faib_ground_plots()` pull and join the Forest Analysis and Inventory Branch ground-sample compilations (BC Data Catalogue record `824e684b-4114-4a05-a490-aa56332b57f4`, Open Government Licence - British Columbia), and `faib_catalogue_record()` resolves the record so the provenance can be cited.

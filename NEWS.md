@@ -1,3 +1,7 @@
+# landisbc 0.0.17
+
+* `read_ground_plot_filters()` and `filter_ground_plot_obs()` support an optional `include_leading` column, restricting which raw species codes count for a modelled species. Codes lump into one modelled species for the simulation, but the members need not be interchangeable for FITTING: a project may model every broadleaf as aspen while fitting the curve on aspen and birch alone, because black cottonwood carries several times aspen's biomass at a given age. Blank admits every code that maps to the species, so existing filter tables are unaffected.
+
 # landisbc 0.0.16
 
 * `derive_ground_plot_obs()` now resolves a volume-to-biomass factor PER PLOT, from that plot's own BEC zone and its own leading species, instead of applying one species-group factor set to every plot. The factors differ by zone -- lodgepole pine converts at 0.5619 in the ICH, 0.5793 in the SBS and 0.5180 in the SBPS -- so a single zone's set applied across a mixed pool is a systematic bias rather than noise. It also converts the eleven species groups the five-group subset could not, Douglas-fir among them. Passing `kivari` restores the previous behaviour; `carbon_fraction` is now explicit rather than hard-coded at 0.5.

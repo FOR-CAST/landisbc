@@ -430,9 +430,13 @@ read_ground_plot_filters <- function(path) {
   if (!"include_bec_labels" %in% names(out)) {
     out$include_bec_labels <- NA_character_
   }
+  if (!"include_leading" %in% names(out)) {
+    out$include_leading <- NA_character_
+  }
   dplyr::select(
     out,
     species,
+    include_leading,
     bec_zone,
     include_bec_labels,
     exclude_tsa,
@@ -445,10 +449,11 @@ read_ground_plot_filters <- function(path) {
 #'
 #' @param obs A tibble from [derive_ground_plot_obs()].
 #' @param species Character. Modelled species code.
-#' @param filters A tibble from [read_ground_plot_filters()]. An optional
-#'   `include_bec_labels` column (semicolon-delimited BEC labels) admits named
-#'   climatic analogues from outside the species' own BEC zone; see
-#'   [bec_climate_analogues()].
+#' @param filters A tibble from [read_ground_plot_filters()]. Two optional
+#'   semicolon-delimited columns refine the selection: `include_bec_labels`
+#'   admits named climatic analogues from outside the species' own BEC zone (see
+#'   [bec_climate_analogues()]), and `include_leading` restricts which raw
+#'   species codes count for the modelled species.
 #'
 #' @return `obs` restricted to that species' observations.
 #' @export
@@ -472,6 +477,17 @@ filter_ground_plot_obs <- function(obs, species, filters) {
     trimws(strsplit(f[["include_bec_labels"]][[1L]], ";", fixed = TRUE)[[1L]])
   } else {
     character(0)
+  }
+
+  ## `include_leading` restricts WHICH raw species codes count for this modelled
+  ## species. Codes lump into one modelled species for the simulation, but the
+  ## members are not necessarily interchangeable for FITTING: a project may model
+  ## every broadleaf as aspen while fitting the curve on aspen and birch alone,
+  ## because black cottonwood carries several times aspen's biomass at a given
+  ## age. Blank admits every code that maps to the species.
+  if ("include_leading" %in% names(f) && !blank(f[["include_leading"]][[1L]])) {
+    keep_raw <- trimws(strsplit(f[["include_leading"]][[1L]], ";", fixed = TRUE)[[1L]])
+    out <- dplyr::filter(out, .data$leading_raw %in% keep_raw)
   }
 
   if (!blank(f$bec_zone[[1L]])) {

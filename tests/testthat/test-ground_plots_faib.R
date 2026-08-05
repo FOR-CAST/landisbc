@@ -178,3 +178,27 @@ test_that("derive_ground_plot_obs() converts species the five-group table could 
   expect_equal(out$kivari_group, "F")
   expect_equal(out$aboveground_c_mg_ha, 100 * 0.5804 * 0.5)
 })
+
+test_that("include_leading restricts which raw codes count for a modelled species", {
+  obs <- tibble::tibble(
+    species = rep("At", 4L),
+    leading_raw = c("AT", "EP", "AC", "DR"),
+    bec_zone = "ICH",
+    bec_label = "ICHmc1",
+    tsa = "Kispiox TSA",
+    leading_pct = 60
+  )
+  filters <- tibble::tibble(
+    species = "At",
+    include_leading = "AT;EP",
+    bec_zone = NA_character_,
+    include_bec_labels = NA_character_,
+    exclude_tsa = NA_character_,
+    exclude_bec_label = NA_character_,
+    min_leading_pct = 0L
+  )
+
+  expect_equal(filter_ground_plot_obs(obs, "At", filters)$leading_raw, c("AT", "EP"))
+  filters$include_leading <- NA_character_
+  expect_equal(nrow(filter_ground_plot_obs(obs, "At", filters)), 4L)
+})

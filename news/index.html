@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">landisbc</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.13</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.14</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -32,6 +32,14 @@
       <small>Source: <a href="https://github.com/FOR-CAST/landisbc/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.14" id="landisbc-0014">landisbc 0.0.14<a class="anchor" aria-label="anchor" href="#landisbc-0014"></a></h2>
+<ul><li>New datasets carrying the published British Columbia volume-to-biomass conversion factors, so any BC project can convert stand volume to biomass without re-parsing a PDF: <code>kivari_volume_to_biomass</code> (16 species groups x 14 BEC zones, all four components plus their total), with <code>kivari_correlation</code>, <code>kivari_sample_frequency</code> and <code>kivari_sp0_codes</code> alongside it so a caller can judge how well supported a given stratum is. The tables are published only as a PDF – a BC Data Catalogue search returns no machine-readable version – so they are parsed programmatically in <code>data-raw/kivari.R</code> and verified there against coefficients independently in use, rather than transcribed by hand. A plain-text copy is installed under <code>extdata/</code>.</li>
+<li>
+<code><a href="../reference/kivari_sp0.html">kivari_sp0()</a></code> assigns BC tree species codes to those species groups, implementing the source report’s own rules. Most are “anything starting with this letter”, but the exceptions are the ones that matter: aspen is its own group rather than falling in with the other <code>A</code> codes, the pines split four ways, and <code>CP</code> / <code>CY</code> go to yellow cedar rather than to cedar.</li>
+<li>
+<code><a href="../reference/kivari_factor.html">kivari_factor()</a></code> looks a factor up directly from species codes and BEC zones. It is vectorised and length-preserving, and returns <code>NA</code> for an unmatched species or zone rather than dropping the row, so a caller can count what did not convert.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.0.13" id="landisbc-0013">landisbc 0.0.13<a class="anchor" aria-label="anchor" href="#landisbc-0013"></a></h2>
 <ul><li>New <code><a href="../reference/bec_climate_analogues.html">bec_climate_analogues()</a></code> ranks BEC labels by climatic similarity to a target, so a species whose own variant has too few ground plots to fit against can borrow from climatically comparable ones. Widening to “the same BEC zone” is the obvious move and the wrong one: zones span large climatic ranges, so a same-zone plot can be less like the target than one from a neighbouring zone. Distance is Euclidean over variables standardised by their spread across labels, otherwise precipitation in millimetres swamps temperature in degrees purely through its numeric range.</li>

@@ -1,5 +1,30 @@
 # Changelog
 
+## landisbc 0.0.14
+
+- New datasets carrying the published British Columbia volume-to-biomass
+  conversion factors, so any BC project can convert stand volume to
+  biomass without re-parsing a PDF: `kivari_volume_to_biomass` (16
+  species groups x 14 BEC zones, all four components plus their total),
+  with `kivari_correlation`, `kivari_sample_frequency` and
+  `kivari_sp0_codes` alongside it so a caller can judge how well
+  supported a given stratum is. The tables are published only as a PDF –
+  a BC Data Catalogue search returns no machine-readable version – so
+  they are parsed programmatically in `data-raw/kivari.R` and verified
+  there against coefficients independently in use, rather than
+  transcribed by hand. A plain-text copy is installed under `extdata/`.
+- [`kivari_sp0()`](https://for-cast.github.io/landisbc/reference/kivari_sp0.md)
+  assigns BC tree species codes to those species groups, implementing
+  the source report’s own rules. Most are “anything starting with this
+  letter”, but the exceptions are the ones that matter: aspen is its own
+  group rather than falling in with the other `A` codes, the pines split
+  four ways, and `CP` / `CY` go to yellow cedar rather than to cedar.
+- [`kivari_factor()`](https://for-cast.github.io/landisbc/reference/kivari_factor.md)
+  looks a factor up directly from species codes and BEC zones. It is
+  vectorised and length-preserving, and returns `NA` for an unmatched
+  species or zone rather than dropping the row, so a caller can count
+  what did not convert.
+
 ## landisbc 0.0.13
 
 - New

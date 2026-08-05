@@ -23,7 +23,7 @@ get_vri_for_fuel_typing(study_area)
 ## Value
 
 An `sf` of VRI polygons carrying (at least)
-[`bcwsft::bcwsft_input_columns`](https://rdrr.io/pkg/bcwsft/man/bcwsft_input_columns.html).
+[`bcwsft::bcwsft_input_columns`](https://for-cast.github.io/bcwsft/reference/bcwsft_input_columns.html).
 
 ## See also
 

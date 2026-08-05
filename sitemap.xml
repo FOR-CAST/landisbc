@@ -45,7 +45,13 @@
 <url><loc>https://for-cast.github.io/landisbc/reference/get_fuel_types.html</loc></url>
 <url><loc>https://for-cast.github.io/landisbc/reference/get_vri_for_fuel_typing.html</loc></url>
 <url><loc>https://for-cast.github.io/landisbc/reference/index.html</loc></url>
+<url><loc>https://for-cast.github.io/landisbc/reference/kivari_correlation.html</loc></url>
+<url><loc>https://for-cast.github.io/landisbc/reference/kivari_factor.html</loc></url>
+<url><loc>https://for-cast.github.io/landisbc/reference/kivari_sample_frequency.html</loc></url>
+<url><loc>https://for-cast.github.io/landisbc/reference/kivari_sp0.html</loc></url>
+<url><loc>https://for-cast.github.io/landisbc/reference/kivari_sp0_codes.html</loc></url>
 <url><loc>https://for-cast.github.io/landisbc/reference/kivari_species_group.html</loc></url>
+<url><loc>https://for-cast.github.io/landisbc/reference/kivari_volume_to_biomass.html</loc></url>
 <url><loc>https://for-cast.github.io/landisbc/reference/landisbc-package.html</loc></url>
 <url><loc>https://for-cast.github.io/landisbc/reference/load_nbac_polys.html</loc></url>
 <url><loc>https://for-cast.github.io/landisbc/reference/load_nfdb_points.html</loc></url>

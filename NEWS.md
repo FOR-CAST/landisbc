@@ -1,3 +1,11 @@
+# landisbc 0.0.12
+
+* New helpers for assembling BC ground-plot observations for growth-curve calibration, extracted from a project that had them inline. `fetch_faib_ground_plots()` and `assemble_faib_ground_plots()` pull and join the Forest Analysis and Inventory Branch ground-sample compilations (BC Data Catalogue record `824e684b-4114-4a05-a490-aa56332b57f4`, Open Government Licence - British Columbia), and `faib_catalogue_record()` resolves the record so the provenance can be cited.
+* `assemble_faib_ground_plots()` handles the fact that the PSP and non-PSP compilations publish the same quantities under DIFFERENT names -- `VHA_WSV_LIV` and `AGE_TOT1` against `VHA_WSV_LS` and `AGET_TLSO`, among others. Binding them naively NA-fills every PSP row, silently discarding half the observations. `faib_harmonise_psp_columns()` does the renaming.
+* `derive_ground_plot_obs()` converts whole-stem volume to aboveground carbon with the Kivari factors (`read_kivari_coef()`, `kivari_species_group()`). Which leading-species codes lump together is supplied by the caller as `species_map` rather than fixed here: that is a modelling decision, not a property of the BC data.
+* `read_ground_plot_filters()` and `filter_ground_plot_obs()` apply per-species BEC-zone, TSA, BEC-label and leading-species-percent restrictions from a versioned table, so which plots count as evidence for which species is recorded rather than buried in plotting or scoring code.
+* `read_tipsy_curves()` and `read_tipsy_series()` read TIPSY managed-stand yield curves and their run metadata.
+
 # landisbc 0.0.11
 
 * `CreateEcoRegionsMap()` computes the dominant BEC zone per grid cell raster-side instead of by polygon intersection. The old route intersected one polygon per grid cell (538,000 on a buffered 100 m LANDIS grid) against a BEC layer holding only ~12 distinct labels, then measured each sliver with `terra::expanse()`; it cost ~17.5 min. Rasterising BEC at 10x10 sub-cell resolution and taking the modal value per cell answers the same question in 5.8 s -- a 181x speedup on a real landscape.

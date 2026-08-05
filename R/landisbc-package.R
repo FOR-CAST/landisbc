@@ -1,17 +1,16 @@
-## Server-side bcdata query column names + the INTERSECTS CQL geometry predicate
-## are evaluated non-standardly inside dplyr::filter()/select() on a bcdc_promise,
-## and tidyterra/dplyr verbs reference bare column symbols non-standardly too.
+## Column symbols referenced non-standardly: server-side bcdata query columns and
+## the INTERSECTS CQL geometry predicate inside dplyr::filter()/select() on a
+## bcdc_promise, and bare column names in tidyterra/dplyr verbs across the
+## fire-data, fuel-typing, VRI and ground-plot helpers. Kept alphabetical.
 utils::globalVariables(c(
-  "FIRE_NUMBER", "FIRE_YEAR", "BURN_SEVERITY_RATING", "INTERSECTS",
-  ## fuel-type WFS query columns
-  "FUEL_TYPE_CD", "PERCENT_CONIFER", "M1_2_PERCENT_CONIFER", "PERCENT_DEAD_FIR",
-  ## fire-data loader columns (NFDB / NBAC) referenced in tidyterra verbs
-  "YEAR", "MONTH", "DAY", "DATE", "JULIAN_DAY", "SIZE_HA", "EcoCode",
-  "MRSRD_Y", "MRSRD_A", ".data",
-  ## fuel-typing confusion-matrix plot aesthetics
-  "provincial", "bcwsft", "Freq",
-  ## VRI -> initial-communities column names, referenced bare in dplyr verbs
-  "Age", "Area", "CleanMapCode", "MapCode", "SpeciesCode", "TotalArea", "hash", "lev2"
+  ".data", "Age", "age", "Area", "bark", "bcwsft", "bec_group", "bec_zone", "bole", "branches",
+  "BURN_SEVERITY_RATING", "CleanMapCode", "CLSTR_ID", "DATE", "DAY", "EcoCode",
+  "exclude_bec_label", "exclude_tsa", "FIRE_NUMBER", "FIRE_YEAR", "foliage", "Freq",
+  "FUEL_TYPE_CD", "hash", "INTERSECTS", "JULIAN_DAY", "lev2", "M1_2_PERCENT_CONIFER", "MapCode",
+  "min_leading_pct", "MONTH", "MRSRD_A", "MRSRD_Y", "PERCENT_CONIFER", "PERCENT_DEAD_FIR",
+  "planting_sph", "provincial", "series_id", "SITE_IDENTIFIER", "site_index", "SIZE_HA",
+  "SPECIES", "species", "species_group", "SpeciesCode", "tipsy_species", "total", "TotalArea",
+  "value", "YEAR"
 ))
 
 #' @keywords internal

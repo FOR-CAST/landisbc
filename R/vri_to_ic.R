@@ -740,11 +740,7 @@ CreateEcoRegionsMap <- function(
   bec_cropped$.bec_idx <- as.integer(match(bec_lab, lab_levels))
 
   subcell <- 10L
-  bec_fine <- terra::rasterize(
-    bec_cropped,
-    terra::disagg(tmpl, fact = subcell),
-    field = ".bec_idx"
-  )
+  bec_fine <- terra::rasterize(bec_cropped, terra::disagg(tmpl, fact = subcell), field = ".bec_idx")
   bec_cell <- terra::aggregate(bec_fine, fact = subcell, fun = "modal", na.rm = TRUE)
 
   # Each LandisGrid polygon is exactly one cell of `tmpl`; recover which via its

@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">landisbc</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.15</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.16</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -32,6 +32,11 @@
       <small>Source: <a href="https://github.com/FOR-CAST/landisbc/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.16" id="landisbc-0016">landisbc 0.0.16<a class="anchor" aria-label="anchor" href="#landisbc-0016"></a></h2>
+<ul><li>
+<code><a href="../reference/derive_ground_plot_obs.html">derive_ground_plot_obs()</a></code> now resolves a volume-to-biomass factor PER PLOT, from that plot’s own BEC zone and its own leading species, instead of applying one species-group factor set to every plot. The factors differ by zone – lodgepole pine converts at 0.5619 in the ICH, 0.5793 in the SBS and 0.5180 in the SBPS – so a single zone’s set applied across a mixed pool is a systematic bias rather than noise. It also converts the eleven species groups the five-group subset could not, Douglas-fir among them. Passing <code>kivari</code> restores the previous behaviour; <code>carbon_fraction</code> is now explicit rather than hard-coded at 0.5.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.0.15" id="landisbc-0015">landisbc 0.0.15<a class="anchor" aria-label="anchor" href="#landisbc-0015"></a></h2>
 <ul><li>

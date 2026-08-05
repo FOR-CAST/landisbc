@@ -122,3 +122,59 @@ test_that("the species map decides which codes lump, and unmapped codes drop out
   expect_setequal(out$species, "At")
   expect_setequal(out$leading_raw, c("AT", "EP"))
 })
+
+test_that("derive_ground_plot_obs() resolves a factor per plot's own BEC zone", {
+  ## Regression: applying one zone's factor set to a pool spanning several zones is a systematic
+  ## bias. Lodgepole pine converts at 0.5619 in the ICH, 0.5793 in the SBS and 0.5180 in the SBPS --
+  ## a 12% spread across three zones a single Cariboo pool routinely contains.
+  plots <- tibble::tibble(
+    SITE_IDENTIFIER = c("a", "b"),
+    CLSTR_ID = c("a1", "b1"),
+    VISIT_NUMBER = 1L,
+    MEAS_YR = 2000L,
+    SAMPLE_ESTABLISHMENT_TYPE = "PSP_G",
+    TSA_DESC = "Quesnel TSA",
+    BEC_ZONE = c("ICH", "SBS"),
+    BECLABEL = c("ICHmc1", "SBSdw1"),
+    SPC_LIVE_1 = c("PL", "PL"),
+    SPC_LIVE_1_PCT = 90L,
+    AGET_TLSO = 100,
+    UTIL = 4,
+    VHA_WSV_LS = 100
+  )
+  map <- c(PL = "Pl")
+
+  out <- derive_ground_plot_obs(plots, species_map = map)
+  expect_equal(out$kivari_group, c("PL", "PL"))
+  ## 100 m3/ha x factor x 0.5
+  expect_equal(out$aboveground_c_mg_ha, 100 * c(0.5619, 0.5793) * 0.5)
+
+  ## supplying `kivari` restores the single-factor behaviour
+  legacy <- derive_ground_plot_obs(
+    plots,
+    kivari = tibble::tibble(species_group = "Pl", total = 0.5619),
+    species_map = map
+  )
+  expect_equal(legacy$aboveground_c_mg_ha, rep(100 * 0.5619 * 0.5, 2L))
+})
+
+test_that("derive_ground_plot_obs() converts species the five-group table could not", {
+  plots <- tibble::tibble(
+    SITE_IDENTIFIER = "a",
+    CLSTR_ID = "a1",
+    VISIT_NUMBER = 1L,
+    MEAS_YR = 2000L,
+    SAMPLE_ESTABLISHMENT_TYPE = "PSP_G",
+    TSA_DESC = "Quesnel TSA",
+    BEC_ZONE = "SBS",
+    BECLABEL = "SBSdw1",
+    SPC_LIVE_1 = "FD",
+    SPC_LIVE_1_PCT = 90L,
+    AGET_TLSO = 100,
+    UTIL = 4,
+    VHA_WSV_LS = 100
+  )
+  out <- derive_ground_plot_obs(plots, species_map = c(FD = "Fd"))
+  expect_equal(out$kivari_group, "F")
+  expect_equal(out$aboveground_c_mg_ha, 100 * 0.5804 * 0.5)
+})

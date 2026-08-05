@@ -1,3 +1,7 @@
+# landisbc 0.0.16
+
+* `derive_ground_plot_obs()` now resolves a volume-to-biomass factor PER PLOT, from that plot's own BEC zone and its own leading species, instead of applying one species-group factor set to every plot. The factors differ by zone -- lodgepole pine converts at 0.5619 in the ICH, 0.5793 in the SBS and 0.5180 in the SBPS -- so a single zone's set applied across a mixed pool is a systematic bias rather than noise. It also converts the eleven species groups the five-group subset could not, Douglas-fir among them. Passing `kivari` restores the previous behaviour; `carbon_fraction` is now explicit rather than hard-coded at 0.5.
+
 # landisbc 0.0.15
 
 * `kivari_volume_to_biomass` corrects one cell. Table 4's cottonwood/BG coefficient is printed as 0.4803 carrying a superscript footnote marker, which `pdftotext` renders as a sixth digit with no separator, so it was extracted as 0.48036. The extraction now strips such markers and reports every cell it altered, and both the extraction and the test suite assert that no coefficient carries more than the four decimals the report publishes. Every one of the 896 coefficients has since been checked against the rendered report pages read independently of `pdftotext`, and all now agree.

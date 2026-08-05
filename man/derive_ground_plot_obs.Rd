@@ -4,12 +4,20 @@
 \alias{derive_ground_plot_obs}
 \title{Derive aboveground-carbon observations from ground-plot records}
 \usage{
-derive_ground_plot_obs(plots, kivari, species_map)
+derive_ground_plot_obs(
+  plots,
+  kivari = NULL,
+  species_map,
+  carbon_fraction = 0.5
+)
 }
 \arguments{
 \item{plots}{A tibble from \code{\link[=assemble_faib_ground_plots]{assemble_faib_ground_plots()}}.}
 
-\item{kivari}{A tibble from \code{\link[=read_kivari_coef]{read_kivari_coef()}}.}
+\item{kivari}{Optional tibble from \code{\link[=read_kivari_coef]{read_kivari_coef()}}. \code{NULL} (the default)
+uses the full published tables, resolving a factor per plot from its BEC
+zone and leading species. Supplying one restores the older behaviour of a
+single factor per species group applied to every plot regardless of zone.}
 
 \item{species_map}{Named character vector mapping FAIB leading-species codes
 (the names) onto modelled species codes (the values). Which codes lump
@@ -17,17 +25,27 @@ together is a modelling decision belonging to the caller, not a property of
 the BC data: a project that models only one broadleaf species maps \code{AT},
 \code{AC}, \code{EP} and the rest onto it, while one that separates them does not.
 Codes absent from the map yield \code{NA} and are dropped.}
+
+\item{carbon_fraction}{Numeric. Fraction of oven-dry biomass that is carbon.
+The published factors convert volume to BIOMASS; this converts biomass to
+carbon.}
 }
 \value{
 A tibble of observations with \code{species}, \code{stand_age}, and
 \code{aboveground_c_mg_ha}.
 }
 \description{
-Converts live whole-stem volume to aboveground carbon with the Kivari factors
-(\code{VHA_WSV_LS * total * 0.5}, giving Mg C ha^-1) and attaches the modelled
-species each plot's leading species resolves to.
+Converts live whole-stem volume to aboveground carbon with the published
+volume-to-biomass factors (\code{VHA_WSV_LS * total * carbon_fraction}, giving
+Mg C ha^-1) and attaches the modelled species each plot's leading species
+resolves to.
 }
 \details{
+By default the factor is looked up PER PLOT from its own BEC zone and its own
+leading species, via \code{\link[=kivari_factor]{kivari_factor()}}. This matters whenever the plot pool
+spans more than one zone: the factors differ by zone, and applying a single
+zone's set across a mixed pool is a systematic bias, not noise.
+
 The leading-species recoding matches the project's \code{vri_species_mapping}: all
 broadleaf deciduous (cottonwood, birch, maple, alder) lump into the single
 \code{At} slot, hemlock and spruce variants into \code{Hw} and \code{Sx}. \code{leading_raw} is

@@ -310,9 +310,15 @@ faib_harmonise_psp_columns <- function(df) {
 
 #' Derive aboveground-carbon observations from ground-plot records
 #'
-#' Converts live whole-stem volume to aboveground carbon with the Kivari factors
-#' (`VHA_WSV_LS * total * 0.5`, giving Mg C ha^-1) and attaches the modelled
-#' species each plot's leading species resolves to.
+#' Converts live whole-stem volume to aboveground carbon with the published
+#' volume-to-biomass factors (`VHA_WSV_LS * total * carbon_fraction`, giving
+#' Mg C ha^-1) and attaches the modelled species each plot's leading species
+#' resolves to.
+#'
+#' By default the factor is looked up PER PLOT from its own BEC zone and its own
+#' leading species, via [kivari_factor()]. This matters whenever the plot pool
+#' spans more than one zone: the factors differ by zone, and applying a single
+#' zone's set across a mixed pool is a systematic bias, not noise.
 #'
 #' The leading-species recoding matches the project's `vri_species_mapping`: all
 #' broadleaf deciduous (cottonwood, birch, maple, alder) lump into the single
@@ -320,7 +326,13 @@ faib_harmonise_psp_columns <- function(df) {
 #' kept so figures can distinguish, for example, birch- from aspen-leading stands.
 #'
 #' @param plots A tibble from [assemble_faib_ground_plots()].
-#' @param kivari A tibble from [read_kivari_coef()].
+#' @param kivari Optional tibble from [read_kivari_coef()]. `NULL` (the default)
+#'   uses the full published tables, resolving a factor per plot from its BEC
+#'   zone and leading species. Supplying one restores the older behaviour of a
+#'   single factor per species group applied to every plot regardless of zone.
+#' @param carbon_fraction Numeric. Fraction of oven-dry biomass that is carbon.
+#'   The published factors convert volume to BIOMASS; this converts biomass to
+#'   carbon.
 #' @param species_map Named character vector mapping FAIB leading-species codes
 #'   (the names) onto modelled species codes (the values). Which codes lump
 #'   together is a modelling decision belonging to the caller, not a property of
@@ -331,17 +343,37 @@ faib_harmonise_psp_columns <- function(df) {
 #' @return A tibble of observations with `species`, `stand_age`, and
 #'   `aboveground_c_mg_ha`.
 #' @export
-derive_ground_plot_obs <- function(plots, kivari, species_map) {
-  factors <- stats::setNames(kivari$total, kivari$species_group)
-
-  plots |>
-    dplyr::mutate(
+derive_ground_plot_obs <- function(plots, kivari = NULL, species_map, carbon_fraction = 0.5) {
+  ## Default path: resolve a factor PER PLOT from its own BEC zone and its own leading species, using
+  ## the full published tables ([kivari_volume_to_biomass]). A plot converts as what it actually is --
+  ## a birch-leading plot converts as birch even where the modelling lumps it in with aspen -- and a
+  ## plot in the SBS converts with SBS factors.
+  ##
+  ## Passing `kivari` restores the former behaviour: one factor per species group, applied to every
+  ## plot regardless of zone. That is only correct where every plot really is in one zone, and it is
+  ## easy to be wrong about: applying a single zone's factors across a mixed pool biased whole-stem
+  ## conversion by up to 6% per species in the pools this was checked against.
+  if (is.null(kivari)) {
+    converted <- dplyr::mutate(
+      plots,
+      leading_raw = toupper(trimws(.data$SPC_LIVE_1)),
+      species = unname(species_map[.data$leading_raw]),
+      kivari_group = kivari_sp0(.data$leading_raw),
+      kivari_total = kivari_factor(.data$leading_raw, .data$BEC_ZONE)
+    )
+  } else {
+    factors <- stats::setNames(kivari$total, kivari$species_group)
+    converted <- dplyr::mutate(
+      plots,
       leading_raw = toupper(trimws(.data$SPC_LIVE_1)),
       species = unname(species_map[.data$leading_raw]),
       kivari_group = kivari_species_group(.data$species),
-      kivari_total = unname(factors[.data$kivari_group]),
-      aboveground_c_mg_ha = .data$VHA_WSV_LS * .data$kivari_total * 0.5
-    ) |>
+      kivari_total = unname(factors[.data$kivari_group])
+    )
+  }
+
+  converted |>
+    dplyr::mutate(aboveground_c_mg_ha = .data$VHA_WSV_LS * .data$kivari_total * carbon_fraction) |>
     dplyr::transmute(
       site_identifier = .data$SITE_IDENTIFIER,
       cluster_id = .data$CLSTR_ID,

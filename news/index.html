@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">landisbc</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.14</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.15</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -32,6 +32,11 @@
       <small>Source: <a href="https://github.com/FOR-CAST/landisbc/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.15" id="landisbc-0015">landisbc 0.0.15<a class="anchor" aria-label="anchor" href="#landisbc-0015"></a></h2>
+<ul><li>
+<code>kivari_volume_to_biomass</code> corrects one cell. Table 4’s cottonwood/BG coefficient is printed as 0.4803 carrying a superscript footnote marker, which <code>pdftotext</code> renders as a sixth digit with no separator, so it was extracted as 0.48036. The extraction now strips such markers and reports every cell it altered, and both the extraction and the test suite assert that no coefficient carries more than the four decimals the report publishes. Every one of the 896 coefficients has since been checked against the rendered report pages read independently of <code>pdftotext</code>, and all now agree.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.0.14" id="landisbc-0014">landisbc 0.0.14<a class="anchor" aria-label="anchor" href="#landisbc-0014"></a></h2>
 <ul><li>New datasets carrying the published British Columbia volume-to-biomass conversion factors, so any BC project can convert stand volume to biomass without re-parsing a PDF: <code>kivari_volume_to_biomass</code> (16 species groups x 14 BEC zones, all four components plus their total), with <code>kivari_correlation</code>, <code>kivari_sample_frequency</code> and <code>kivari_sp0_codes</code> alongside it so a caller can judge how well supported a given stratum is. The tables are published only as a PDF – a BC Data Catalogue search returns no machine-readable version – so they are parsed programmatically in <code>data-raw/kivari.R</code> and verified there against coefficients independently in use, rather than transcribed by hand. A plain-text copy is installed under <code>extdata/</code>.</li>

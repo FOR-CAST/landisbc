@@ -1,5 +1,17 @@
 # Changelog
 
+## landisbc 0.0.15
+
+- `kivari_volume_to_biomass` corrects one cell. Table 4’s cottonwood/BG
+  coefficient is printed as 0.4803 carrying a superscript footnote
+  marker, which `pdftotext` renders as a sixth digit with no separator,
+  so it was extracted as 0.48036. The extraction now strips such markers
+  and reports every cell it altered, and both the extraction and the
+  test suite assert that no coefficient carries more than the four
+  decimals the report publishes. Every one of the 896 coefficients has
+  since been checked against the rendered report pages read
+  independently of `pdftotext`, and all now agree.
+
 ## landisbc 0.0.14
 
 - New datasets carrying the published British Columbia volume-to-biomass

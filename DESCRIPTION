@@ -9,7 +9,7 @@ Description: Province of British Columbia data-preparation helpers for
     'landisutils' (the study-area-agnostic 'LANDIS-II' tooling); BC-specific
     data sources and mappings live here so they can be reused across British
     Columbia projects.
-URL: https://github.com/FOR-CAST/landisbc
+URL: https://for-cast.github.io/landisbc/, https://github.com/FOR-CAST/landisbc
 BugReports: https://github.com/FOR-CAST/landisbc/issues
 Version: 0.0.13
 Authors@R: c(

@@ -42,6 +42,8 @@ Language: en-CA
 LazyData: true
 License: Apache License (>= 2)
 Roxygen: list(markdown = TRUE)
+Remotes:
+    FOR-CAST/bcwsft
 Config/testthat/edition: 3
 Config/roxygen2/version: 8.0.0
 RoxygenNote: 8.0.0

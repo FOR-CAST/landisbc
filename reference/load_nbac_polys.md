@@ -6,8 +6,8 @@ taken from the adjusted burned area (NBAC's canonical burned-area
 figure, excluding unburned islands/water) and `YEAR` from the NBAC year
 field. Both the year and the burned-area columns are detected tolerantly
 (year: `YEAR` or `FIRE_YEAR`; area: `ADJ_HA`, `POLY_HA`, or `HECTARES`),
-so the loader works across NBAC vintages and across the BC_HRV and
-gitanyow-partial-harvest projects. Filtered to the fire years and
+so the loader works across NBAC vintages and across the extracts
+different projects reach them through. Filtered to the fire years and
 `SIZE_HA >= 1` ha, projected + clipped to the study area.
 
 ## Usage

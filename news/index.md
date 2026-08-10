@@ -1,5 +1,30 @@
 # Changelog
 
+## landisbc 0.0.18
+
+- [`clip_nfdb_to_study_area()`](https://for-cast.github.io/landisbc/reference/clip_nfdb_to_study_area.md)
+  now keeps only points on the rasterToMatch’s ACTIVE (non-`NA`) cells,
+  where it previously cropped to the raster’s extent. A rasterToMatch is
+  rectangular and a study area is not, so the extent admits whatever the
+  bounding box adds around an irregular boundary – for a typical
+  natural-resource district, over a third of the box. Since the
+  function’s stated purpose is supplying observed targets for fire
+  calibration, that surplus inflated every rate derived from it while
+  looking entirely plausible.
+- [`load_nfdb_points()`](https://for-cast.github.io/landisbc/reference/load_nfdb_points.md)
+  now drops points whose extracted `EcoCode` is `0`, not merely `NA`.
+  `0` is LANDIS-II’s reserved inactive-cell code: LANDIS-II reads raw
+  raster cell values and ignores the GDAL NoData flag, so a
+  fire-ecoregions map marks everything outside the simulated landscape
+  with `0` rather than `NA`, and the previous `NA`-only filter therefore
+  returned every point in the map’s bounding box. The documentation
+  described that filter as “what restricts the national NFDB to the
+  study area”, which it was not. Callers keyed on a zone table were
+  incidentally immune because `0` is not a zone; callers consuming the
+  point set wholesale – counts, rates, seasonal splits – silently were
+  not, which is why the filter belongs here rather than in each caller.
+  Passing `fire_eco_map_path = NULL` is unaffected.
+
 ## landisbc 0.0.17
 
 - [`read_ground_plot_filters()`](https://for-cast.github.io/landisbc/reference/read_ground_plot_filters.md)

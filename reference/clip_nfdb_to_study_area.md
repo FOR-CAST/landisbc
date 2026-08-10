@@ -1,7 +1,7 @@
 # Clip national NFDB fire points to a study area
 
-Projects NFDB points to a study-area rasterToMatch CRS and crops them to
-its extent (the observed-targets input for fire calibration).
+Projects NFDB points to a study-area rasterToMatch CRS and keeps those
+falling on its ACTIVE (non-`NA`) cells.
 
 ## Usage
 
@@ -18,12 +18,28 @@ clip_nfdb_to_study_area(nfdb_points, rtm_path)
 
 - rtm_path:
 
-  Path to the study-area rasterToMatch (defines CRS + extent).
+  Path to the study-area rasterToMatch (defines the CRS and, through its
+  non-`NA` cells, the study area).
 
 ## Value
 
 A `SpatVector` of NFDB points within the study area, in the
 rasterToMatch CRS.
+
+## Details
+
+Restricting to the extent is not the same thing and is not enough: a
+rasterToMatch is rectangular, a study area is not, and the gap between
+the two is whatever the bounding box adds around an irregular boundary –
+for a typical natural-resource district, over a third of the box. Since
+this feeds observed targets for fire calibration, admitting that surplus
+inflates every rate derived from it while looking entirely plausible.
+This function previously cropped to the extent alone.
+
+Takes the active mask from `NA`, which is the rasterToMatch convention.
+Note this differs from a LANDIS-II fire-ecoregions map, where inactive
+cells carry the reserved code `0` instead – see
+[`load_nfdb_points()`](https://for-cast.github.io/landisbc/reference/load_nfdb_points.md).
 
 ## See also
 

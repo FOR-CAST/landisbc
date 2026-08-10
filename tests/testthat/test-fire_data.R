@@ -58,6 +58,69 @@ test_that("fuel_types_distribution() scales counts by cell area in hectares", {
   expect_equal(sort(dist$hectares), c(11.52, 11.52))
 })
 
+## Fire-ecoregions raster in the LANDIS-II convention: 0 = inactive, >= 1 = a zone.
+## Left half is zone 1, right half is inactive.
+make_eco <- function() {
+  r <- make_rtm()
+  terra::values(r) <- rep(c(1L, 1L, 0L, 0L), times = 4)
+  r
+}
+
+## NFDB-style points carrying the columns load_nfdb_points() needs.
+write_nfdb_points <- function(x, y, path) {
+  p <- terra::vect(cbind(x, y), type = "points", crs = "EPSG:3005")
+  p$YEAR <- 2010L
+  p$MONTH <- 7L
+  p$DAY <- 1L
+  p$SIZE_HA <- 100
+  terra::writeVector(p, path, overwrite = TRUE)
+  path
+}
+
+test_that("load_nfdb_points() keeps only points on active ecoregion cells", {
+  eco_path <- withr::local_tempfile(fileext = ".tif")
+  terra::writeRaster(make_eco(), eco_path, overwrite = TRUE)
+  pts_path <- write_nfdb_points(
+    x = c(60, 180, 300, 420, 600),
+    y = c(60, 300, 60, 420, 600),
+    path = withr::local_tempfile(fileext = ".gpkg")
+  )
+
+  out <- load_nfdb_points(pts_path, eco_path, fire_years = 2000:2020)
+  ## two points sit on zone 1; two sit on inactive (0) cells; one is off the raster (NA)
+  expect_equal(nrow(out), 2L)
+  expect_equal(unique(out$EcoCode), 1L)
+})
+
+test_that("load_nfdb_points() leaves points untagged and uncropped without an ecoregions map", {
+  pts_path <- write_nfdb_points(
+    x = c(60, 300, 600),
+    y = c(60, 60, 600),
+    path = withr::local_tempfile(fileext = ".gpkg")
+  )
+
+  out <- load_nfdb_points(pts_path, fire_eco_map_path = NULL, fire_years = 2000:2020)
+  expect_equal(nrow(out), 3L)
+  expect_false("EcoCode" %in% names(out))
+})
+
+test_that("clip_nfdb_to_study_area() drops points off the rasterToMatch's active cells", {
+  rtm <- make_rtm()
+  ## active only in the left half; NA elsewhere, as crop_mask_to() leaves a rasterToMatch
+  terra::values(rtm) <- rep(c(1L, 1L, NA_integer_, NA_integer_), times = 4)
+  rtm_path <- withr::local_tempfile(fileext = ".tif")
+  terra::writeRaster(rtm, rtm_path, overwrite = TRUE)
+
+  pts <- terra::vect(
+    cbind(c(60, 180, 300, 420), c(60, 300, 60, 420)),
+    type = "points",
+    crs = "EPSG:3005"
+  )
+
+  ## all four are inside the bounding box; only the two on non-NA cells are in the study area
+  expect_equal(nrow(clip_nfdb_to_study_area(pts, rtm_path)), 2L)
+})
+
 test_that("load_nbac_polys() tolerates either project's year/size columns", {
   sa_path <- withr::local_tempfile(fileext = ".gpkg")
   terra::writeVector(make_sa(), sa_path, overwrite = TRUE)

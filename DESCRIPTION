@@ -11,7 +11,7 @@ Description: Province of British Columbia data-preparation helpers for
     Columbia projects.
 URL: https://for-cast.github.io/landisbc/, https://github.com/FOR-CAST/landisbc
 BugReports: https://github.com/FOR-CAST/landisbc/issues
-Version: 0.0.17
+Version: 0.0.18
 Authors@R: c(
     person("Alex M", "Chubaty", email = "achubaty@for-cast.ca",
            role = c("aut", "cre"), comment = c(ORCID = "0000-0001-7146-8135")),
@@ -45,5 +45,4 @@ Roxygen: list(markdown = TRUE)
 Remotes:
     FOR-CAST/bcwsft
 Config/testthat/edition: 3
-Config/roxygen2/version: 8.0.0
-RoxygenNote: 8.0.0
+Config/roxygen2/version: 8.1.0

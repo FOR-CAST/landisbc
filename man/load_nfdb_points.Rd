@@ -10,26 +10,52 @@ load_nfdb_points(nfdb_shp, fire_eco_map_path = NULL, fire_years)
 \item{nfdb_shp}{Path(s) to the NFDB point shapefile(s).}
 
 \item{fire_eco_map_path}{Optional path to a fire-ecoregions raster. When
-supplied (the BC_HRV path), points are reprojected to its CRS and tagged
-with \code{EcoCode}; points outside any zone are dropped. \code{NULL} (default) skips
-the EcoCode tagging.}
+supplied, points are reprojected to its CRS, tagged with \code{EcoCode}, and
+restricted to the mapped zones (see Details). \code{NULL} (default) skips the
+EcoCode tagging, leaving the points untagged and uncropped.}
 
 \item{fire_years}{Integer vector of fire years to keep.}
 }
 \value{
 A \code{SpatVector} of NFDB points within the study area (and, when
-\code{fire_eco_map_path} is supplied, carrying an integer \code{EcoCode} column).
+\code{fire_eco_map_path} is supplied, carrying an integer \code{EcoCode} column whose
+values are all >= 1).
 }
 \description{
 Loads National Fire DataBase (NFDB) fire points, filters to the study-area
 fire years and \code{SIZE_HA >= 1} ha, projects to the fire-ecoregions grid, and
 (optionally) tags each fire with its fire-ecoregion \code{EcoCode} extracted from a
-fire-ecoregions raster. When \code{fire_eco_map_path} is supplied, fires outside
-the study-area zones (NA \code{EcoCode}) are dropped -- this is what restricts the
-national NFDB to the study area, generalised over the N zones (no hard-coded
-zone). The year column is detected tolerantly (\code{YEAR} or \code{FIRE_YEAR}) so the
-loader works across the BC_HRV and gitanyow-partial-harvest projects.
+fire-ecoregions raster. When \code{fire_eco_map_path} is supplied, fires that do
+not land on a mapped zone are dropped -- this is what restricts the national
+NFDB to the study area, generalised over the N zones (no hard-coded zone). The
+year column is detected tolerantly (\code{YEAR} or \code{FIRE_YEAR}) so the loader works
+across projects.
 }
+\section{Which points count as "in the study area"}{
+A point is kept only when its extracted \code{EcoCode} is both non-\code{NA} and
+non-zero. Both conditions are load-bearing, and dropping the second is a
+silent, consequential bug:
+\itemize{
+\item \code{NA} means the point fell outside the raster altogether.
+\item \code{0} is LANDIS-II's reserved INACTIVE-cell code. LANDIS-II reads raw raster
+cell values and ignores the GDAL NoData flag, so a fire-ecoregions map marks
+everything outside the simulated landscape with \code{0} rather than \code{NA}.
+}
+
+A raster is rectangular but a study area is not, so filtering on \code{NA} alone
+keeps every point in the map's bounding box. In a downstream fire calibration
+that took the bounding box rather than the landscape, this admitted roughly
+twice the ignitions the simulated landscape actually holds; the resulting
+observed ignition rate was unreachable by construction and the ignition-count
+loss degenerated into a constant that dragged the fitted ignition
+probabilities to their bounds.
+
+Callers that key on a zone table (\code{zones$EcoCode}) are incidentally immune,
+since \code{0} is not a zone. Callers that consume the returned point set WHOLESALE
+-- counts, rates, seasonal splits -- are not, which is why the filter belongs
+here rather than in each caller.
+}
+
 \seealso{
 Other BC fire and fuel data:
 \code{\link[=calc_recently_disturbed]{calc_recently_disturbed()}},

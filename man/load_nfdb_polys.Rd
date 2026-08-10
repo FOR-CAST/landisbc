@@ -22,8 +22,8 @@ study-area CRS.
 \description{
 Loads National Fire DataBase (NFDB) fire polygons, filters to the fire years
 and \code{SIZE_HA >= 1} ha, and projects + clips to the study area. The year column
-is detected tolerantly (\code{YEAR} or \code{FIRE_YEAR}) so the loader works across the
-BC_HRV and gitanyow-partial-harvest projects.
+is detected tolerantly (\code{YEAR} or \code{FIRE_YEAR}) so the loader works across
+release vintages and extracts.
 }
 \seealso{
 Other BC fire and fuel data:

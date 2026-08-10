@@ -2,6 +2,7 @@
 181x
 1a
 1b
+4's
 AgeBinSize
 Albers
 Alnus
@@ -14,6 +15,7 @@ bcdata's
 BCLCS
 bcwsft
 BEC
+BG
 Biogeoclimatic
 BRN
 CanLaBS
@@ -34,11 +36,13 @@ dsn
 EcoCode
 ecoregion
 ecoregion's
+ecoregions
 EPSG
 errored
 erroring
 FAIB
 FBP
+GDAL
 GDB
 generalised
 geodata
@@ -47,11 +51,9 @@ GeoTIFF
 GeoTIFFs
 GetBECCodes
 GetNonVegData
-gitanyow
 hardcoded
 harmonised
 harmonises
-HRV
 ICH
 II's
 initialisation
@@ -73,6 +75,7 @@ namespaced
 NBAC
 NBAC's
 NFDB
+NoData
 normalisation
 normalised
 normalises
@@ -82,12 +85,14 @@ pre
 ProcessInitialCommunitiesData
 PSP
 randomised
+raster's
 Rasterise
 rasterises
 Rasterises
 Rasterising
 rasterizes
 rasterToMatch
+rasterToMatch's
 readme
 reprojected
 reprojecting

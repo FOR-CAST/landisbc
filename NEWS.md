@@ -73,7 +73,7 @@
 
 # landisbc 0.0.4
 
-* New BC fire-and-fuel data helpers, de-duplicated from shared BC_HRV / gitanyow-partial-harvest code: the loaders tolerate either project's column names (e.g. `YEAR`/`FIRE_YEAR`, `ADJ_HA`/`POLY_HA`/`HECTARES`), the fuel-typing WFS query is done in EPSG:3005 (robust to a non-standard sim CRS), and fuel-type area is computed from the raster resolution (not hardcoded per-cell).
+* New BC fire-and-fuel data helpers, de-duplicated from code shared between two downstream LANDIS-II projects: the loaders tolerate either extract's column names (e.g. `YEAR`/`FIRE_YEAR`, `ADJ_HA`/`POLY_HA`/`HECTARES`), the fuel-typing WFS query is done in EPSG:3005 (robust to a non-standard sim CRS), and fuel-type area is computed from the raster resolution (not hardcoded per-cell).
 * `calc_recently_disturbed()` rasterises the most-recent stand-replacing disturbance (since a cutoff year) to a rasterToMatch.
 * `clip_nfdb_to_study_area()` projects + crops NFDB fire points to a study-area rasterToMatch.
 * `compare_fuel_typing()` builds a confusion matrix and overall agreement between bcwsft and provincial fuel types.

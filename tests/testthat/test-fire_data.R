@@ -135,7 +135,7 @@ test_that("load_nbac_polys() tolerates either project's year/size columns", {
     )))
   }
 
-  ## gitanyow-style schema: FIRE_YEAR + POLY_HA (neither is the BC_HRV YEAR/ADJ_HA pair)
+  ## alternate schema: FIRE_YEAR + POLY_HA (neither is the canonical YEAR/ADJ_HA pair)
   nbac <- sf::st_sf(
     FIRE_YEAR = c(2010L, 1999L),
     POLY_HA = c(50, 200),

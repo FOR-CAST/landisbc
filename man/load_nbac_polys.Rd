@@ -25,7 +25,7 @@ adjusted burned area (NBAC's canonical burned-area figure, excluding unburned
 islands/water) and \code{YEAR} from the NBAC year field. Both the year and the
 burned-area columns are detected tolerantly (year: \code{YEAR} or \code{FIRE_YEAR};
 area: \code{ADJ_HA}, \code{POLY_HA}, or \code{HECTARES}), so the loader works across NBAC
-vintages and across the BC_HRV and gitanyow-partial-harvest projects.
+vintages and across the extracts different projects reach them through.
 Filtered to the fire years and \code{SIZE_HA >= 1} ha, projected + clipped to the
 study area.
 }

@@ -6,15 +6,15 @@
 ## Fire / Dynamic Fuels inputs and the fire calibration targets.
 ##
 ## Provenance:
-##   * De-duplicated from shared BC_HRV / gitanyow-partial-harvest code.
+##   * De-duplicated from code shared between two downstream LANDIS-II projects.
 
 # ---- Internal helpers --------------------------------------------------------
 
-## Dual-project column tolerance: the NFDB and NBAC attribute schemas differ
-## between vintages and between the BC_HRV and gitanyow-partial-harvest projects
-## (e.g. YEAR vs FIRE_YEAR for the year field; ADJ_HA vs POLY_HA vs HECTARES for
-## the burned-area field). Pick the first candidate column present, or NA when
-## none match (callers decide whether a missing column is fatal).
+## Column tolerance: the NFDB and NBAC attribute schemas differ between release
+## vintages, and downstream projects reach these records through different
+## extracts (e.g. YEAR vs FIRE_YEAR for the year field; ADJ_HA vs POLY_HA vs
+## HECTARES for the burned-area field). Pick the first candidate column present,
+## or NA when none match (callers decide whether a missing column is fatal).
 .first_col <- function(x, candidates) {
   intersect(candidates, names(x))[1L]
 }
@@ -102,8 +102,8 @@ load_nfdb_points <- function(nfdb_shp, fire_eco_map_path = NULL, fire_years) {
 #'
 #' Loads National Fire DataBase (NFDB) fire polygons, filters to the fire years
 #' and `SIZE_HA >= 1` ha, and projects + clips to the study area. The year column
-#' is detected tolerantly (`YEAR` or `FIRE_YEAR`) so the loader works across the
-#' BC_HRV and gitanyow-partial-harvest projects.
+#' is detected tolerantly (`YEAR` or `FIRE_YEAR`) so the loader works across
+#' release vintages and extracts.
 #'
 #' @param nfdb_shp Character vector of NFDB polygon shapefile path(s) (the NFDB
 #'   poly record ships multiple multi-year partitions).
@@ -155,7 +155,7 @@ load_nfdb_polys <- function(nfdb_shp, study_area_path, fire_years) {
 #' islands/water) and `YEAR` from the NBAC year field. Both the year and the
 #' burned-area columns are detected tolerantly (year: `YEAR` or `FIRE_YEAR`;
 #' area: `ADJ_HA`, `POLY_HA`, or `HECTARES`), so the loader works across NBAC
-#' vintages and across the BC_HRV and gitanyow-partial-harvest projects.
+#' vintages and across the extracts different projects reach them through.
 #' Filtered to the fire years and `SIZE_HA >= 1` ha, projected + clipped to the
 #' study area.
 #'

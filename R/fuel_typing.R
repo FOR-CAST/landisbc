@@ -8,7 +8,7 @@
 ## installed -- the functions that use it only run when bcwsft is available.
 ##
 ## Provenance:
-##   * De-duplicated from shared BC_HRV / gitanyow-partial-harvest code.
+##   * De-duplicated from code shared between two downstream LANDIS-II projects.
 
 #' Pull the VRI attributes the bcwsft decision tree needs, over a study area
 #'
@@ -31,8 +31,8 @@ get_vri_for_fuel_typing <- function(study_area) {
     study_area <- sf::st_as_sf(study_area)
   }
   ## VEG_COMP Rank 1 layer. It carries every bcwsft input attribute directly -- including BEC_ZONE_CODE,
-  ## BEC_SUBZONE and COAST_INTERIOR_CD -- so no separate BEC spatial join is needed (confirmed in
-  ## gitanyow against bcdc_describe_feature(): all of bcwsft::bcwsft_input_columns are present).
+  ## BEC_SUBZONE and COAST_INTERIOR_CD -- so no separate BEC spatial join is needed (confirmed
+  ## against bcdc_describe_feature(): all of bcwsft::bcwsft_input_columns are present).
   ## Query in BC Albers (the WFS cannot interpret a custom sim CRS); reproject the result back.
   sa_q <- sf::st_transform(study_area, 3005)
   bcdata::bcdc_query_geodata("2ebb35d8-c82f-4a17-9c96-612ac3532d55") |>

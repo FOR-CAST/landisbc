@@ -1,5 +1,37 @@
 # Changelog
 
+## landisbc 0.0.19
+
+- [`assemble_faib_ground_plots()`](https://for-cast.github.io/landisbc/reference/assemble_faib_ground_plots.md)
+  accepts `tsas = NULL`, retaining every Timber Supply Area the
+  compilation publishes. The PSP compilation is published as
+  province-wide flat files and only filtered to the requested areas
+  after the join, so widening a pool past the local areas costs no
+  further download – which matters for the species a single landscape
+  holds too few plots of to fit a growth curve against. Not the default:
+  an unrestricted pool is only safe once an admissible BEC-zone list or
+  a climatic weight keeps a species from being fitted on plots from a
+  climate it does not grow in. Passing `NULL` is not equivalent to
+  enumerating every published area, because a plot on land with no
+  Timber Supply Area (a park, a federal reserve) carries a blank
+  `TSA_DESC`.
+- [`read_ground_plot_filters()`](https://for-cast.github.io/landisbc/reference/read_ground_plot_filters.md)
+  and
+  [`filter_ground_plot_obs()`](https://for-cast.github.io/landisbc/reference/filter_ground_plot_obs.md)
+  support an optional `include_bec_zones` column, widening the
+  single-zone `bec_zone` restriction to a set of admissible zones. The
+  two union rather than override, so an existing filter table is
+  unaffected. This is the companion to `tsas = NULL`: on a province-wide
+  pool, the BEC zones a species occupies are what separate a widened
+  pool from a wrong one – western hemlock has four times as many coastal
+  plots as interior ones, so an unrestricted provincial pool fits an
+  interior stand against a coastal curve.
+- [`faib_split_compilations()`](https://for-cast.github.io/landisbc/reference/faib_split_compilations.md)
+  splits cached file paths into the PSP and non-PSP compilations. They
+  are published on different footprints – province-wide flat files
+  against a per-area partition – so a pool that is province-wide in one
+  and local in the other has to assemble them separately.
+
 ## landisbc 0.0.18
 
 - [`clip_nfdb_to_study_area()`](https://for-cast.github.io/landisbc/reference/clip_nfdb_to_study_area.md)

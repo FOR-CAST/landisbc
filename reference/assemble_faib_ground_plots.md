@@ -24,7 +24,14 @@ assemble_faib_ground_plots(
 
 - tsas:
 
-  Character vector of Timber Supply Area names to retain.
+  Character vector of Timber Supply Area names to retain, or `NULL` to
+  retain every area the compilation publishes. `NULL` is how a
+  province-wide pool is assembled: the PSP compilation is published as
+  province-wide flat files, so widening it past the local areas costs no
+  further download. It is deliberately not the default, because an
+  unrestricted pool is only safe once something else – an admissible
+  BEC-zone list, a climatic weight – keeps a species from being fitted
+  on plots from a climate it does not grow in.
 
 - util:
 

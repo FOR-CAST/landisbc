@@ -9,7 +9,7 @@ the requested Timber Supply Areas at the 4 cm close-utilization level."></head><
 
     <a class="navbar-brand me-2" href="../index.html">landisbc</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.18</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.19</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -60,7 +60,14 @@ the requested Timber Supply Areas at the 4 cm close-utilization level.</p>
 
 
 <dt id="arg-tsas">tsas<a class="anchor" aria-label="anchor" href="#arg-tsas"></a></dt>
-<dd><p>Character vector of Timber Supply Area names to retain.</p></dd>
+<dd><p>Character vector of Timber Supply Area names to retain, or <code>NULL</code>
+to retain every area the compilation publishes. <code>NULL</code> is how a
+province-wide pool is assembled: the PSP compilation is published as
+province-wide flat files, so widening it past the local areas costs no
+further download. It is deliberately not the default, because an
+unrestricted pool is only safe once something else – an admissible BEC-zone
+list, a climatic weight – keeps a species from being fitted on plots from a
+climate it does not grow in.</p></dd>
 
 
 <dt id="arg-util">util<a class="anchor" aria-label="anchor" href="#arg-util"></a></dt>

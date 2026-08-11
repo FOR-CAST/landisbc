@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">landisbc</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.18</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.19</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -32,6 +32,15 @@
       <small>Source: <a href="https://github.com/FOR-CAST/landisbc/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.19" id="landisbc-0019">landisbc 0.0.19<a class="anchor" aria-label="anchor" href="#landisbc-0019"></a></h2>
+<ul><li>
+<code><a href="../reference/assemble_faib_ground_plots.html">assemble_faib_ground_plots()</a></code> accepts <code>tsas = NULL</code>, retaining every Timber Supply Area the compilation publishes. The PSP compilation is published as province-wide flat files and only filtered to the requested areas after the join, so widening a pool past the local areas costs no further download – which matters for the species a single landscape holds too few plots of to fit a growth curve against. Not the default: an unrestricted pool is only safe once an admissible BEC-zone list or a climatic weight keeps a species from being fitted on plots from a climate it does not grow in. Passing <code>NULL</code> is not equivalent to enumerating every published area, because a plot on land with no Timber Supply Area (a park, a federal reserve) carries a blank <code>TSA_DESC</code>.</li>
+<li>
+<code><a href="../reference/read_ground_plot_filters.html">read_ground_plot_filters()</a></code> and <code><a href="../reference/filter_ground_plot_obs.html">filter_ground_plot_obs()</a></code> support an optional <code>include_bec_zones</code> column, widening the single-zone <code>bec_zone</code> restriction to a set of admissible zones. The two union rather than override, so an existing filter table is unaffected. This is the companion to <code>tsas = NULL</code>: on a province-wide pool, the BEC zones a species occupies are what separate a widened pool from a wrong one – western hemlock has four times as many coastal plots as interior ones, so an unrestricted provincial pool fits an interior stand against a coastal curve.</li>
+<li>
+<code><a href="../reference/faib_split_compilations.html">faib_split_compilations()</a></code> splits cached file paths into the PSP and non-PSP compilations. They are published on different footprints – province-wide flat files against a per-area partition – so a pool that is province-wide in one and local in the other has to assemble them separately.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.0.18" id="landisbc-0018">landisbc 0.0.18<a class="anchor" aria-label="anchor" href="#landisbc-0018"></a></h2>
 <ul><li>

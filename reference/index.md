@@ -105,6 +105,9 @@
 - [`faib_leading_species_percent()`](https://for-cast.github.io/landisbc/reference/faib_leading_species_percent.md)
   : Extract the leading species' percentage from a composition string
 
+- [`faib_split_compilations()`](https://for-cast.github.io/landisbc/reference/faib_split_compilations.md)
+  : Split cached FAIB file paths by compilation
+
 - [`fetch_faib_ground_plots()`](https://for-cast.github.io/landisbc/reference/fetch_faib_ground_plots.md)
   : Download the FAIB ground-plot tables
 

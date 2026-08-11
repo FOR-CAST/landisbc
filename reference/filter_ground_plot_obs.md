@@ -23,9 +23,10 @@ filter_ground_plot_obs(obs, species, filters)
 
   A tibble from
   [`read_ground_plot_filters()`](https://for-cast.github.io/landisbc/reference/read_ground_plot_filters.md).
-  Two optional semicolon-delimited columns refine the selection:
-  `include_bec_labels` admits named climatic analogues from outside the
-  species' own BEC zone (see
+  Three optional semicolon-delimited columns refine the selection:
+  `include_bec_zones` widens the single-zone `bec_zone` restriction to a
+  set of admissible zones, `include_bec_labels` admits named climatic
+  analogues from outside them (see
   [`bec_climate_analogues()`](https://for-cast.github.io/landisbc/reference/bec_climate_analogues.md)),
   and `include_leading` restricts which raw species codes count for the
   modelled species.

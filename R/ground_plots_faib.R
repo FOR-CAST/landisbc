@@ -97,7 +97,14 @@ fetch_faib_ground_plots <- function(dest, tsas = .faib_tsas, overwrite = FALSE) 
 #'
 #' @param files Character vector of cached file paths, from
 #'   [fetch_faib_ground_plots()].
-#' @param tsas Character vector of Timber Supply Area names to retain.
+#' @param tsas Character vector of Timber Supply Area names to retain, or `NULL`
+#'   to retain every area the compilation publishes. `NULL` is how a
+#'   province-wide pool is assembled: the PSP compilation is published as
+#'   province-wide flat files, so widening it past the local areas costs no
+#'   further download. It is deliberately not the default, because an
+#'   unrestricted pool is only safe once something else -- an admissible BEC-zone
+#'   list, a climatic weight -- keeps a species from being fitted on plots from a
+#'   climate it does not grow in.
 #' @param util Numeric. Close-utilization level to retain.
 #' @param exclude_sample_types Character vector of `SAMPLE_ESTABLISHMENT_TYPE`
 #'   values to drop. Defaults to `"PSP_R"`; see the note above that constant.
@@ -234,15 +241,41 @@ assemble_faib_ground_plots <- function(
     dplyr::mutate(SPECIES = toupper(trimws(.data$SPECIES))) |>
     dplyr::distinct(CLSTR_ID, SPECIES, .keep_all = TRUE)
 
-  smries |>
+  out <- smries |>
     dplyr::inner_join(visits, by = "CLSTR_ID") |>
     dplyr::inner_join(header, by = "SITE_IDENTIFIER") |>
-    dplyr::left_join(siteage, by = c("CLSTR_ID" = "CLSTR_ID", "SPC_LIVE_1" = "SPECIES")) |>
-    dplyr::filter(
-      .data$TSA_DESC %in% tsas,
-      !.data$SAMPLE_ESTABLISHMENT_TYPE %in% exclude_sample_types
-    ) |>
+    dplyr::left_join(siteage, by = c("CLSTR_ID" = "CLSTR_ID", "SPC_LIVE_1" = "SPECIES"))
+
+  ## `NULL` means province-wide. Enumerating every published area instead would
+  ## look equivalent and is not: a plot on land with no Timber Supply Area (a
+  ## park, a federal reserve) carries a blank `TSA_DESC` and would be dropped by
+  ## an `%in%` over the published names.
+  if (!is.null(tsas)) {
+    out <- dplyr::filter(out, .data$TSA_DESC %in% tsas)
+  }
+
+  out |>
+    dplyr::filter(!.data$SAMPLE_ESTABLISHMENT_TYPE %in% exclude_sample_types) |>
     dplyr::arrange(.data$SITE_IDENTIFIER, .data$VISIT_NUMBER)
+}
+
+#' Split cached FAIB file paths by compilation
+#'
+#' The two compilations are published on different footprints -- PSP as
+#' province-wide flat files, non-PSP partitioned by Timber Supply Area -- so a
+#' pool that is province-wide in one and local in the other has to assemble them
+#' separately. This keeps the file-naming convention that
+#' [fetch_faib_ground_plots()] writes inside the package that writes it, rather
+#' than making every caller re-derive it.
+#'
+#' @param files Character vector of cached file paths, from
+#'   [fetch_faib_ground_plots()].
+#'
+#' @return A list with `psp` and `non_psp` character vectors.
+#' @export
+faib_split_compilations <- function(files) {
+  base <- basename(files)
+  list(psp = files[startsWith(base, "psp__")], non_psp = files[startsWith(base, "nonpsp__")])
 }
 
 #' Extract the leading species' code from a composition string
@@ -425,19 +458,20 @@ read_ground_plot_filters <- function(path) {
   out <- utils::read.csv(path, stringsAsFactors = FALSE) |>
     tibble::as_tibble() |>
     dplyr::mutate(dplyr::across(dplyr::any_of("min_leading_pct"), as.integer))
-  ## `include_bec_labels` is optional, so a table written before analogues
-  ## existed still reads.
-  if (!"include_bec_labels" %in% names(out)) {
-    out$include_bec_labels <- NA_character_
-  }
-  if (!"include_leading" %in% names(out)) {
-    out$include_leading <- NA_character_
+  ## All three are optional, so a table written before any of them existed still
+  ## reads: `include_bec_labels` predates the analogues, `include_bec_zones`
+  ## predates province-wide pools.
+  for (col in c("include_bec_labels", "include_leading", "include_bec_zones")) {
+    if (!col %in% names(out)) {
+      out[[col]] <- NA_character_
+    }
   }
   dplyr::select(
     out,
     species,
     include_leading,
     bec_zone,
+    include_bec_zones,
     include_bec_labels,
     exclude_tsa,
     exclude_bec_label,
@@ -449,9 +483,10 @@ read_ground_plot_filters <- function(path) {
 #'
 #' @param obs A tibble from [derive_ground_plot_obs()].
 #' @param species Character. Modelled species code.
-#' @param filters A tibble from [read_ground_plot_filters()]. Two optional
-#'   semicolon-delimited columns refine the selection: `include_bec_labels`
-#'   admits named climatic analogues from outside the species' own BEC zone (see
+#' @param filters A tibble from [read_ground_plot_filters()]. Three optional
+#'   semicolon-delimited columns refine the selection: `include_bec_zones` widens
+#'   the single-zone `bec_zone` restriction to a set of admissible zones,
+#'   `include_bec_labels` admits named climatic analogues from outside them (see
 #'   [bec_climate_analogues()]), and `include_leading` restricts which raw
 #'   species codes count for the modelled species.
 #'
@@ -467,17 +502,22 @@ filter_ground_plot_obs <- function(obs, species, filters) {
 
   blank <- function(x) is.na(x) || !nzchar(trimws(x))
 
+  ## A semicolon-delimited field as a character vector; empty when blank/absent.
+  listed <- function(col) {
+    if (col %in% names(f) && !blank(f[[col]][[1L]])) {
+      trimws(strsplit(f[[col]][[1L]], ";", fixed = TRUE)[[1L]])
+    } else {
+      character(0)
+    }
+  }
+
   ## `include_bec_labels` ADDS analogue plots back after the zone restriction,
   ## so a species can be held to its own zone while still admitting named
   ## climatic analogues from outside it. Blank keeps the zone restriction alone,
   ## which is the conservative default; see bec_climate_analogues().
   ## NOT `f$include_bec_labels`: a tibble errors on `$` for an absent column, and
   ## a filter table written before analogues existed will not have it.
-  extra <- if ("include_bec_labels" %in% names(f) && !blank(f[["include_bec_labels"]][[1L]])) {
-    trimws(strsplit(f[["include_bec_labels"]][[1L]], ";", fixed = TRUE)[[1L]])
-  } else {
-    character(0)
-  }
+  extra <- listed("include_bec_labels")
 
   ## `include_leading` restricts WHICH raw species codes count for this modelled
   ## species. Codes lump into one modelled species for the simulation, but the
@@ -485,13 +525,25 @@ filter_ground_plot_obs <- function(obs, species, filters) {
   ## every broadleaf as aspen while fitting the curve on aspen and birch alone,
   ## because black cottonwood carries several times aspen's biomass at a given
   ## age. Blank admits every code that maps to the species.
-  if ("include_leading" %in% names(f) && !blank(f[["include_leading"]][[1L]])) {
-    keep_raw <- trimws(strsplit(f[["include_leading"]][[1L]], ";", fixed = TRUE)[[1L]])
+  keep_raw <- listed("include_leading")
+  if (length(keep_raw)) {
     out <- dplyr::filter(out, .data$leading_raw %in% keep_raw)
   }
 
-  if (!blank(f$bec_zone[[1L]])) {
-    out <- dplyr::filter(out, .data$bec_zone == f$bec_zone[[1L]] | .data$bec_label %in% extra)
+  ## `bec_zone` and `include_bec_zones` are the same restriction at two widths,
+  ## so they union rather than override: a table can name one zone, a set, or
+  ## both. A single zone is the right pool for a species well represented in the
+  ## modelled landscape; a set is what lets a province-wide pool admit the zones
+  ## a species actually occupies without admitting the ones it does not. Left
+  ## blank the pool is unrestricted, which on a province-wide pool means a
+  ## species can be fitted on plots from a climate it does not grow in -- that is
+  ## the caller's call to make, and to record.
+  zones <- union(
+    if (blank(f$bec_zone[[1L]])) character(0) else trimws(f$bec_zone[[1L]]),
+    listed("include_bec_zones")
+  )
+  if (length(zones)) {
+    out <- dplyr::filter(out, .data$bec_zone %in% zones | .data$bec_label %in% extra)
   }
   if (!blank(f$exclude_tsa[[1L]])) {
     drop <- trimws(strsplit(f$exclude_tsa[[1L]], ";", fixed = TRUE)[[1L]])

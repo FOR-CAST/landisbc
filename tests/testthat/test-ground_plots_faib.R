@@ -18,6 +18,18 @@ test_that("an unparseable percent is NA, not an error", {
   expect_equal(faib_leading_species_percent(c("HW", "HWxx")), c(NA_integer_, NA_integer_))
 })
 
+test_that("the cached file paths split by compilation", {
+  files <- c(
+    "cache/psp__faib_header.csv",
+    "cache/nonpsp__Some_TSA__faib_header.csv",
+    "cache/psp__faib_sample_byvisit.csv"
+  )
+  out <- faib_split_compilations(files)
+
+  expect_equal(out$psp, files[c(1L, 3L)])
+  expect_equal(out$non_psp, files[2L])
+})
+
 test_that("PSP columns are renamed onto the non-PSP schema", {
   psp <- tibble::tibble(
     CLSTR_ID = "a",
@@ -177,6 +189,38 @@ test_that("derive_ground_plot_obs() converts species the five-group table could 
   out <- derive_ground_plot_obs(plots, species_map = c(FD = "Fd"))
   expect_equal(out$kivari_group, "F")
   expect_equal(out$aboveground_c_mg_ha, 100 * 0.5804 * 0.5)
+})
+
+test_that("include_bec_zones admits a set of zones, unioned with bec_zone", {
+  f <- tibble::tibble(
+    species = "Hw",
+    bec_zone = "ICH",
+    include_bec_zones = "CWH",
+    exclude_tsa = "",
+    exclude_bec_label = "",
+    min_leading_pct = 0L
+  )
+  expect_setequal(filter_ground_plot_obs(obs(), "Hw", f)$bec_zone, c("ICH", "CWH"))
+
+  ## the set alone, with no single-zone field, is the province-wide pool case
+  f$bec_zone <- NA_character_
+  f$include_bec_zones <- "CWH;ICH"
+  expect_equal(nrow(filter_ground_plot_obs(obs(), "Hw", f)), 4L)
+
+  ## and it still EXCLUDES: naming only the coastal zone drops the interior plots
+  f$include_bec_zones <- "CWH"
+  expect_equal(filter_ground_plot_obs(obs(), "Hw", f)$bec_label, "CWHvm1")
+})
+
+test_that("a filter table written without include_bec_zones is unaffected", {
+  f <- tibble::tibble(
+    species = "Hw",
+    bec_zone = "ICH",
+    exclude_tsa = "",
+    exclude_bec_label = "",
+    min_leading_pct = 0L
+  )
+  expect_setequal(filter_ground_plot_obs(obs(), "Hw", f)$bec_zone, "ICH")
 })
 
 test_that("include_leading restricts which raw codes count for a modelled species", {

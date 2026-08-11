@@ -15,7 +15,14 @@ assemble_faib_ground_plots(
 \item{files}{Character vector of cached file paths, from
 \code{\link[=fetch_faib_ground_plots]{fetch_faib_ground_plots()}}.}
 
-\item{tsas}{Character vector of Timber Supply Area names to retain.}
+\item{tsas}{Character vector of Timber Supply Area names to retain, or \code{NULL}
+to retain every area the compilation publishes. \code{NULL} is how a
+province-wide pool is assembled: the PSP compilation is published as
+province-wide flat files, so widening it past the local areas costs no
+further download. It is deliberately not the default, because an
+unrestricted pool is only safe once something else -- an admissible BEC-zone
+list, a climatic weight -- keeps a species from being fitted on plots from a
+climate it does not grow in.}
 
 \item{util}{Numeric. Close-utilization level to retain.}
 

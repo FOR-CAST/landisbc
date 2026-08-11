@@ -11,9 +11,10 @@ filter_ground_plot_obs(obs, species, filters)
 
 \item{species}{Character. Modelled species code.}
 
-\item{filters}{A tibble from \code{\link[=read_ground_plot_filters]{read_ground_plot_filters()}}. Two optional
-semicolon-delimited columns refine the selection: \code{include_bec_labels}
-admits named climatic analogues from outside the species' own BEC zone (see
+\item{filters}{A tibble from \code{\link[=read_ground_plot_filters]{read_ground_plot_filters()}}. Three optional
+semicolon-delimited columns refine the selection: \code{include_bec_zones} widens
+the single-zone \code{bec_zone} restriction to a set of admissible zones,
+\code{include_bec_labels} admits named climatic analogues from outside them (see
 \code{\link[=bec_climate_analogues]{bec_climate_analogues()}}), and \code{include_leading} restricts which raw
 species codes count for the modelled species.}
 }

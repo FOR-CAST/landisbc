@@ -1,3 +1,7 @@
+# landisbc 0.0.20
+
+* `ProcessInitialCommunitiesData()` gains `missing_age = c("drop", "leading")`. A species listed after the leading one without an age of its own (`PROJ_AGE_N` missing or zero) was always discarded, as in the original Python tool, and that remains the default. `"leading"` gives it the leading species' age instead. BC VRI records ages for the first two species only. In one extract examined, `PROJ_AGE_2` was blank for most second species and, where recorded, almost always equal to `PROJ_AGE_1`, so dropping removed the second species from three stands in four and left most cells holding a single species.
+
 # landisbc 0.0.19
 
 * `assemble_faib_ground_plots()` accepts `tsas = NULL`, retaining every Timber Supply Area the compilation publishes. The PSP compilation is published as province-wide flat files and only filtered to the requested areas after the join, so widening a pool past the local areas costs no further download -- which matters for the species a single landscape holds too few plots of to fit a growth curve against. Not the default: an unrestricted pool is only safe once an admissible BEC-zone list or a climatic weight keeps a species from being fitted on plots from a climate it does not grow in. Passing `NULL` is not equivalent to enumerating every published area, because a plot on land with no Timber Supply Area (a park, a federal reserve) carries a blank `TSA_DESC`.

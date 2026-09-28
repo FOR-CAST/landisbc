@@ -34,12 +34,12 @@ layer study-area-specific lumping on top via a named-vector merge.}
 \item{missing_age}{What to do with a species listed after the leading one
 without an age of its own (\code{PROJ_AGE_N} missing or zero). \code{"drop"} (the
 default, and the original Python tool's behaviour) discards it.
-\code{"leading"} gives it the leading species' age. In one BC VRI extract
-examined, \code{PROJ_AGE_2} was blank for most second species and, where
-recorded, almost always equal to \code{PROJ_AGE_1}, while \code{PROJ_AGE_3} to
-\code{PROJ_AGE_6} always equalled it; there \code{"drop"} removed the second species
-from three stands in four. The leading species itself is dropped when its
-own age is missing, under either setting.}
+\code{"leading"} gives it the leading species' age. BC VRI records ages for
+the first two species only; in one extract examined, \code{PROJ_AGE_2} was
+blank for most second species and, where recorded, almost always equal to
+\code{PROJ_AGE_1}, so \code{"drop"} removed the second species from three stands in
+four. The leading species itself is dropped when its own age is missing,
+under either setting.}
 }
 \value{
 data.frame with columns: MapCode (character), SpeciesCode, Age (integer).

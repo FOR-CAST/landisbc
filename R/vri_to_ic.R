@@ -246,12 +246,12 @@ CreateInitialCommunitiesData <- function(LandisGrid, VRI1FilePath, n_species = 2
 #' @param missing_age What to do with a species listed after the leading one
 #'   without an age of its own (`PROJ_AGE_N` missing or zero). `"drop"` (the
 #'   default, and the original Python tool's behaviour) discards it.
-#'   `"leading"` gives it the leading species' age. In one BC VRI extract
-#'   examined, `PROJ_AGE_2` was blank for most second species and, where
-#'   recorded, almost always equal to `PROJ_AGE_1`, while `PROJ_AGE_3` to
-#'   `PROJ_AGE_6` always equalled it; there `"drop"` removed the second species
-#'   from three stands in four. The leading species itself is dropped when its
-#'   own age is missing, under either setting.
+#'   `"leading"` gives it the leading species' age. BC VRI records ages for
+#'   the first two species only; in one extract examined, `PROJ_AGE_2` was
+#'   blank for most second species and, where recorded, almost always equal to
+#'   `PROJ_AGE_1`, so `"drop"` removed the second species from three stands in
+#'   four. The leading species itself is dropped when its own age is missing,
+#'   under either setting.
 #'
 #' @return data.frame with columns: MapCode (character), SpeciesCode, Age (integer).
 #' @family BC VRI to LANDIS-II initial communities

@@ -1,5 +1,26 @@
 # Changelog
 
+## landisbc 0.0.21
+
+- [`ProcessInitialCommunitiesData()`](https://for-cast.github.io/landisbc/reference/ProcessInitialCommunitiesData.md)
+  accepts a FUNCTION for `species_mapping`, alongside the named vector
+  it already took. A project whose species mapping is derived rather
+  than enumerated – from a species-equivalence table, say – can now pass
+  the lookup itself instead of maintaining a parallel copy of this
+  function. The function is called once per species field rather than
+  once per row.
+- [`ProcessInitialCommunitiesData()`](https://for-cast.github.io/landisbc/reference/ProcessInitialCommunitiesData.md)
+  gains `unmapped = c("error", "drop")`. A raw code the mapping does not
+  cover still stops the call by default, naming every offending code
+  rather than only the first; `"drop"` discards those cohorts, which is
+  what a project mapping a provincial code list onto a landscape’s own
+  species needs.
+- A species code that resolves to nothing is now dropped rather than
+  written out with an empty name. Cohorts were filtered on the RAW code
+  being non-empty, so a literal `"NA"` – which the cleaner maps to `""`
+  by design – reached the output as a cohort with no species. The
+  initial-communities CSV that produced is not readable by LANDIS-II.
+
 ## landisbc 0.0.20
 
 - [`ProcessInitialCommunitiesData()`](https://for-cast.github.io/landisbc/reference/ProcessInitialCommunitiesData.md)

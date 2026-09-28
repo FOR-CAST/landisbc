@@ -17,7 +17,8 @@ ProcessInitialCommunitiesData(
   SliverThreshold,
   species_mapping = species_map_bc_vri,
   n_species = 2L,
-  missing_age = c("drop", "leading")
+  missing_age = c("drop", "leading"),
+  unmapped = c("error", "drop")
 )
 ```
 
@@ -47,7 +48,12 @@ ProcessInitialCommunitiesData(
   appear in the study area's LANDIS-II `species.txt`. Defaults to the
   province-wide
   [species_map_bc_vri](https://for-cast.github.io/landisbc/reference/species_map_bc_vri.md);
-  layer study-area-specific lumping on top via a named-vector merge.
+  layer study-area-specific lumping on top via a named-vector merge. May
+  instead be a FUNCTION taking a character vector of raw codes and
+  returning the cleaned codes, for a project whose mapping is derived
+  rather than enumerated. It is called once per species field, not once
+  per row, and must return one element per input, using `NA` or `""` for
+  a code it does not cover.
 
 - n_species:
 
@@ -64,6 +70,13 @@ ProcessInitialCommunitiesData(
   `PROJ_AGE_1`, so `"drop"` removed the second species from three stands
   in four. The leading species itself is dropped when its own age is
   missing, under either setting.
+
+- unmapped:
+
+  What to do with a non-empty raw code the mapping does not cover:
+  `"error"` (the default, and the behaviour before this argument
+  existed) names the offending codes, `"drop"` discards those cohorts. A
+  missing or empty code is not "unmapped" and is always dropped quietly.
 
 ## Value
 

@@ -13,7 +13,7 @@ drops absent or zero-age records, and deduplicates."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">landisbc</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.20</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.21</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -55,7 +55,8 @@ drops absent or zero-age records, and deduplicates.</p>
 <span>  <span class="va">SliverThreshold</span>,</span>
 <span>  species_mapping <span class="op">=</span> <span class="va">species_map_bc_vri</span>,</span>
 <span>  n_species <span class="op">=</span> <span class="fl">2L</span>,</span>
-<span>  missing_age <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"drop"</span>, <span class="st">"leading"</span><span class="op">)</span></span>
+<span>  missing_age <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"drop"</span>, <span class="st">"leading"</span><span class="op">)</span>,</span>
+<span>  unmapped <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"error"</span>, <span class="st">"drop"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -84,7 +85,12 @@ drops absent or zero-age records, and deduplicates.</p>
 <code><a href="CleanUpSpeciesCodeLayer.html">CleanUpSpeciesCodeLayer()</a></code>. Names are raw VRI codes; values are the
 cleaned target codes that appear in the study area's LANDIS-II
 <code>species.txt</code>. Defaults to the province-wide <a href="species_map_bc_vri.html">species_map_bc_vri</a>;
-layer study-area-specific lumping on top via a named-vector merge.</p></dd>
+layer study-area-specific lumping on top via a named-vector merge.
+May instead be a FUNCTION taking a character vector of raw codes and
+returning the cleaned codes, for a project whose mapping is derived rather
+than enumerated. It is called once per species field, not once per row, and
+must return one element per input, using <code>NA</code> or <code>""</code> for a code it does not
+cover.</p></dd>
 
 
 <dt id="arg-n-species">n_species<a class="anchor" aria-label="anchor" href="#arg-n-species"></a></dt>
@@ -101,6 +107,13 @@ blank for most second species and, where recorded, almost always equal to
 <code>PROJ_AGE_1</code>, so <code>"drop"</code> removed the second species from three stands in
 four. The leading species itself is dropped when its own age is missing,
 under either setting.</p></dd>
+
+
+<dt id="arg-unmapped">unmapped<a class="anchor" aria-label="anchor" href="#arg-unmapped"></a></dt>
+<dd><p>What to do with a non-empty raw code the mapping does not
+cover: <code>"error"</code> (the default, and the behaviour before this argument
+existed) names the offending codes, <code>"drop"</code> discards those cohorts. A
+missing or empty code is not "unmapped" and is always dropped quietly.</p></dd>
 
 </dl></div>
     <div class="section level2">

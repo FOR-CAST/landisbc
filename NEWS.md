@@ -1,3 +1,9 @@
+# landisbc 0.0.21
+
+* `ProcessInitialCommunitiesData()` accepts a FUNCTION for `species_mapping`, alongside the named vector it already took. A project whose species mapping is derived rather than enumerated -- from a species-equivalence table, say -- can now pass the lookup itself instead of maintaining a parallel copy of this function. The function is called once per species field rather than once per row.
+* `ProcessInitialCommunitiesData()` gains `unmapped = c("error", "drop")`. A raw code the mapping does not cover still stops the call by default, naming every offending code rather than only the first; `"drop"` discards those cohorts, which is what a project mapping a provincial code list onto a landscape's own species needs.
+* A species code that resolves to nothing is now dropped rather than written out with an empty name. Cohorts were filtered on the RAW code being non-empty, so a literal `"NA"` -- which the cleaner maps to `""` by design -- reached the output as a cohort with no species. The initial-communities CSV that produced is not readable by LANDIS-II.
+
 # landisbc 0.0.20
 
 * `ProcessInitialCommunitiesData()` gains `missing_age = c("drop", "leading")`. A species listed after the leading one without an age of its own (`PROJ_AGE_N` missing or zero) was always discarded, as in the original Python tool, and that remains the default. `"leading"` gives it the leading species' age instead. BC VRI records ages for the first two species only. In one extract examined, `PROJ_AGE_2` was blank for most second species and, where recorded, almost always equal to `PROJ_AGE_1`, so dropping removed the second species from three stands in four and left most cells holding a single species.

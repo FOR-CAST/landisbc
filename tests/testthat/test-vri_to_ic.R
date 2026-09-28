@@ -57,3 +57,52 @@ test_that("n_species limits which species are read", {
   out <- .process(n_species = 2L, missing_age = "leading")
   expect_setequal(out$SpeciesCode[out$MapCode == "10001"], c("Hw", "Bl"))
 })
+
+## ProcessInitialCommunitiesData(): how raw species codes are resolved.
+
+test_that("species_mapping may be a function, and is called once per species field", {
+  calls <- 0L
+  lookup <- function(codes) {
+    calls <<- calls + 1L
+    c(HW = "Hw", BL = "Bl", SX = "Sx")[codes]
+  }
+  out <- .process(n_species = 3L, species_mapping = lookup, missing_age = "leading")
+
+  expect_setequal(out$SpeciesCode[out$MapCode == "10001"], c("Hw", "Bl", "Sx"))
+  ## three species fields, not one call per row
+  expect_equal(calls, 3L)
+})
+
+test_that("a function mapping must return one code per input", {
+  expect_snapshot(.process(species_mapping = function(codes) character(0)), error = TRUE)
+})
+
+test_that("an unmapped code errors by default and is dropped on request", {
+  partial <- c(HW = "Hw") ## BL and SX unmapped
+
+  expect_snapshot(.process(n_species = 3L, species_mapping = partial), error = TRUE)
+  expect_snapshot(
+    .process(n_species = 3L, species_mapping = function(codes) partial[codes]),
+    error = TRUE
+  )
+
+  out <- .process(n_species = 3L, species_mapping = partial, unmapped = "drop")
+  expect_setequal(out$SpeciesCode, "Hw")
+})
+
+test_that("a code that resolves to nothing never reaches the output", {
+  ## a literal "NA" species code with a real age alongside it
+  fragments <- .ic_fragments()
+  fragments$SPECIES_CD_2[1] <- "NA"
+  fragments$PROJ_AGE_2[1] <- 120
+
+  out <- ProcessInitialCommunitiesData(
+    fragments,
+    AgeBinSize = 20L,
+    grid_size = 100,
+    SliverThreshold = 1,
+    n_species = 2L
+  )
+  expect_equal(out$SpeciesCode[out$MapCode == "10001"], "Hw")
+  expect_equal(sum(!nzchar(out$SpeciesCode)), 0L)
+})

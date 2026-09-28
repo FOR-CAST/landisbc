@@ -51,6 +51,53 @@
   result
 }
 
+## Resolve raw VRI species codes to cleaned codes, for either kind of `species_mapping`.
+## Missing, empty and literal "NA" codes resolve to "" (no cohort). A code the mapping does not
+## cover is an error or resolves to "", per `unmapped`.
+.resolve_species_codes <- function(codes, mapping, unmapped = c("error", "drop")) {
+  unmapped <- match.arg(unmapped)
+  codes <- as.character(codes)
+  absent <- is.na(codes) | !nzchar(trimws(codes)) | codes == "NA"
+
+  out <- character(length(codes))
+  if (!any(!absent)) {
+    return(out)
+  }
+
+  raw <- codes[!absent]
+  if (is.function(mapping)) {
+    cleaned <- as.character(mapping(raw))
+    if (length(cleaned) != length(raw)) {
+      stop(
+        "`species_mapping` must return one cleaned code per input code (got ",
+        length(cleaned),
+        " for ",
+        length(raw),
+        ").",
+        call. = FALSE
+      )
+    }
+  } else if (identical(unmapped, "error")) {
+    ## per code, so CleanUpSpeciesCodeLayer()'s own error names the offending one
+    cleaned <- vapply(raw, CleanUpSpeciesCodeLayer, character(1), mapping = mapping)
+  } else {
+    cleaned <- unname(mapping[raw])
+  }
+
+  missed <- is.na(cleaned) | !nzchar(cleaned)
+  if (any(missed) && identical(unmapped, "error")) {
+    stop(
+      "VRI species code(s) not in the supplied mapping: ",
+      paste(sort(unique(raw[missed])), collapse = ", "),
+      '. Add them to `species_mapping`, pass `unmapped = "drop"`, or filter them upstream.',
+      call. = FALSE
+    )
+  }
+  cleaned[missed] <- ""
+  out[!absent] <- cleaned
+  out
+}
+
 ## Build the BEC zone/subzone field name for a given SpatVector
 .bec_field <- function(v) {
   if ("bec_zone_subzone" %in% names(v)) {
@@ -242,6 +289,15 @@ CreateInitialCommunitiesData <- function(LandisGrid, VRI1FilePath, n_species = 2
 #'   cleaned target codes that appear in the study area's LANDIS-II
 #'   `species.txt`. Defaults to the province-wide [species_map_bc_vri];
 #'   layer study-area-specific lumping on top via a named-vector merge.
+#'   May instead be a FUNCTION taking a character vector of raw codes and
+#'   returning the cleaned codes, for a project whose mapping is derived rather
+#'   than enumerated. It is called once per species field, not once per row, and
+#'   must return one element per input, using `NA` or `""` for a code it does not
+#'   cover.
+#' @param unmapped What to do with a non-empty raw code the mapping does not
+#'   cover: `"error"` (the default, and the behaviour before this argument
+#'   existed) names the offending codes, `"drop"` discards those cohorts. A
+#'   missing or empty code is not "unmapped" and is always dropped quietly.
 #' @param n_species               Number of species/age field pairs to detect (default 2).
 #' @param missing_age What to do with a species listed after the leading one
 #'   without an age of its own (`PROJ_AGE_N` missing or zero). `"drop"` (the
@@ -263,9 +319,11 @@ ProcessInitialCommunitiesData <- function(
   SliverThreshold,
   species_mapping = species_map_bc_vri,
   n_species = 2L,
-  missing_age = c("drop", "leading")
+  missing_age = c("drop", "leading"),
+  unmapped = c("error", "drop")
 ) {
   missing_age <- match.arg(missing_age)
+  unmapped <- match.arg(unmapped)
   SliverThresholdArea <- grid_size * grid_size * SliverThreshold / 100
 
   df <- as.data.frame(InitialCommunitiesData)
@@ -294,14 +352,11 @@ ProcessInitialCommunitiesData <- function(
 
   # Build one record data.frame per species, filtering out absent/empty species codes
   sp_records <- lapply(pairs, function(p) {
-    cleaned <- vapply(
-      as.character(df[[p$sp]]),
-      CleanUpSpeciesCodeLayer,
-      character(1),
-      mapping = species_mapping
-    )
+    cleaned <- .resolve_species_codes(df[[p$sp]], species_mapping, unmapped)
     binned <- bin(df[[p$age]])
-    keep <- df[[p$age]] > 0 & !is.na(df[[p$sp]]) & nzchar(trimws(as.character(df[[p$sp]])))
+    ## keyed on the CLEANED code, so a code resolving to nothing never reaches the output as an
+    ## empty species name
+    keep <- df[[p$age]] > 0 & nzchar(cleaned)
     data.frame(
       MapCode = MapCode_chr[keep],
       SpeciesCode = cleaned[keep],

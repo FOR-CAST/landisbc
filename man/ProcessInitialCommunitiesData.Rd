@@ -11,7 +11,8 @@ ProcessInitialCommunitiesData(
   SliverThreshold,
   species_mapping = species_map_bc_vri,
   n_species = 2L,
-  missing_age = c("drop", "leading")
+  missing_age = c("drop", "leading"),
+  unmapped = c("error", "drop")
 )
 }
 \arguments{
@@ -27,7 +28,12 @@ ProcessInitialCommunitiesData(
 \code{\link[=CleanUpSpeciesCodeLayer]{CleanUpSpeciesCodeLayer()}}. Names are raw VRI codes; values are the
 cleaned target codes that appear in the study area's LANDIS-II
 \code{species.txt}. Defaults to the province-wide \link{species_map_bc_vri};
-layer study-area-specific lumping on top via a named-vector merge.}
+layer study-area-specific lumping on top via a named-vector merge.
+May instead be a FUNCTION taking a character vector of raw codes and
+returning the cleaned codes, for a project whose mapping is derived rather
+than enumerated. It is called once per species field, not once per row, and
+must return one element per input, using \code{NA} or \code{""} for a code it does not
+cover.}
 
 \item{n_species}{Number of species/age field pairs to detect (default 2).}
 
@@ -40,6 +46,11 @@ blank for most second species and, where recorded, almost always equal to
 \code{PROJ_AGE_1}, so \code{"drop"} removed the second species from three stands in
 four. The leading species itself is dropped when its own age is missing,
 under either setting.}
+
+\item{unmapped}{What to do with a non-empty raw code the mapping does not
+cover: \code{"error"} (the default, and the behaviour before this argument
+existed) names the offending codes, \code{"drop"} discards those cohorts. A
+missing or empty code is not "unmapped" and is always dropped quietly.}
 }
 \value{
 data.frame with columns: MapCode (character), SpeciesCode, Age (integer).

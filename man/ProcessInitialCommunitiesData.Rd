@@ -10,7 +10,8 @@ ProcessInitialCommunitiesData(
   grid_size,
   SliverThreshold,
   species_mapping = species_map_bc_vri,
-  n_species = 2L
+  n_species = 2L,
+  missing_age = c("drop", "leading")
 )
 }
 \arguments{
@@ -29,6 +30,16 @@ cleaned target codes that appear in the study area's LANDIS-II
 layer study-area-specific lumping on top via a named-vector merge.}
 
 \item{n_species}{Number of species/age field pairs to detect (default 2).}
+
+\item{missing_age}{What to do with a species listed after the leading one
+without an age of its own (\code{PROJ_AGE_N} missing or zero). \code{"drop"} (the
+default, and the original Python tool's behaviour) discards it.
+\code{"leading"} gives it the leading species' age. In one BC VRI extract
+examined, \code{PROJ_AGE_2} was blank for most second species and, where
+recorded, almost always equal to \code{PROJ_AGE_1}, while \code{PROJ_AGE_3} to
+\code{PROJ_AGE_6} always equalled it; there \code{"drop"} removed the second species
+from three stands in four. The leading species itself is dropped when its
+own age is missing, under either setting.}
 }
 \value{
 data.frame with columns: MapCode (character), SpeciesCode, Age (integer).

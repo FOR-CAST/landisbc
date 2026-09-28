@@ -243,6 +243,15 @@ CreateInitialCommunitiesData <- function(LandisGrid, VRI1FilePath, n_species = 2
 #'   `species.txt`. Defaults to the province-wide [species_map_bc_vri];
 #'   layer study-area-specific lumping on top via a named-vector merge.
 #' @param n_species               Number of species/age field pairs to detect (default 2).
+#' @param missing_age What to do with a species listed after the leading one
+#'   without an age of its own (`PROJ_AGE_N` missing or zero). `"drop"` (the
+#'   default, and the original Python tool's behaviour) discards it.
+#'   `"leading"` gives it the leading species' age. In one BC VRI extract
+#'   examined, `PROJ_AGE_2` was blank for most second species and, where
+#'   recorded, almost always equal to `PROJ_AGE_1`, while `PROJ_AGE_3` to
+#'   `PROJ_AGE_6` always equalled it; there `"drop"` removed the second species
+#'   from three stands in four. The leading species itself is dropped when its
+#'   own age is missing, under either setting.
 #'
 #' @return data.frame with columns: MapCode (character), SpeciesCode, Age (integer).
 #' @family BC VRI to LANDIS-II initial communities
@@ -253,8 +262,10 @@ ProcessInitialCommunitiesData <- function(
   grid_size,
   SliverThreshold,
   species_mapping = species_map_bc_vri,
-  n_species = 2L
+  n_species = 2L,
+  missing_age = c("drop", "leading")
 ) {
+  missing_age <- match.arg(missing_age)
   SliverThresholdArea <- grid_size * grid_size * SliverThreshold / 100
 
   df <- as.data.frame(InitialCommunitiesData)
@@ -263,6 +274,15 @@ ProcessInitialCommunitiesData <- function(
   # Replace NA ages with 0 for all detected species (matches Python int(None) → crash avoidance)
   for (p in pairs) {
     df[[p$age]][is.na(df[[p$age]])] <- 0L
+  }
+  # A later species without an age of its own takes the leading species' age, before binning,
+  # so it lands in the same age bin as the species it shares the stand with.
+  if (missing_age == "leading" && length(pairs) > 1L) {
+    lead_age <- df[[pairs[[1L]]$age]]
+    for (p in pairs[-1L]) {
+      ageless <- df[[p$age]] <= 0 & lead_age > 0
+      df[[p$age]][ageless] <- lead_age[ageless]
+    }
   }
 
   # Filter slivers and zero-MapCode artefacts from the union

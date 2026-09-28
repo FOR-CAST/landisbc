@@ -1,5 +1,18 @@
 # Changelog
 
+## landisbc 0.0.20
+
+- [`ProcessInitialCommunitiesData()`](https://for-cast.github.io/landisbc/reference/ProcessInitialCommunitiesData.md)
+  gains `missing_age = c("drop", "leading")`. A species listed after the
+  leading one without an age of its own (`PROJ_AGE_N` missing or zero)
+  was always discarded, as in the original Python tool, and that remains
+  the default. `"leading"` gives it the leading species’ age instead. BC
+  VRI records ages for the first two species only. In one extract
+  examined, `PROJ_AGE_2` was blank for most second species and, where
+  recorded, almost always equal to `PROJ_AGE_1`, so dropping removed the
+  second species from three stands in four and left most cells holding a
+  single species.
+
 ## landisbc 0.0.19
 
 - [`assemble_faib_ground_plots()`](https://for-cast.github.io/landisbc/reference/assemble_faib_ground_plots.md)

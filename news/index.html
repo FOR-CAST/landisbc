@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">landisbc</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.19</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.20</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -32,6 +32,11 @@
       <small>Source: <a href="https://github.com/FOR-CAST/landisbc/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.20" id="landisbc-0020">landisbc 0.0.20<a class="anchor" aria-label="anchor" href="#landisbc-0020"></a></h2>
+<ul><li>
+<code><a href="../reference/ProcessInitialCommunitiesData.html">ProcessInitialCommunitiesData()</a></code> gains <code>missing_age = c("drop", "leading")</code>. A species listed after the leading one without an age of its own (<code>PROJ_AGE_N</code> missing or zero) was always discarded, as in the original Python tool, and that remains the default. <code>"leading"</code> gives it the leading species’ age instead. BC VRI records ages for the first two species only. In one extract examined, <code>PROJ_AGE_2</code> was blank for most second species and, where recorded, almost always equal to <code>PROJ_AGE_1</code>, so dropping removed the second species from three stands in four and left most cells holding a single species.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.0.19" id="landisbc-0019">landisbc 0.0.19<a class="anchor" aria-label="anchor" href="#landisbc-0019"></a></h2>
 <ul><li>

@@ -16,7 +16,8 @@ ProcessInitialCommunitiesData(
   grid_size,
   SliverThreshold,
   species_mapping = species_map_bc_vri,
-  n_species = 2L
+  n_species = 2L,
+  missing_age = c("drop", "leading")
 )
 ```
 
@@ -51,6 +52,18 @@ ProcessInitialCommunitiesData(
 - n_species:
 
   Number of species/age field pairs to detect (default 2).
+
+- missing_age:
+
+  What to do with a species listed after the leading one without an age
+  of its own (`PROJ_AGE_N` missing or zero). `"drop"` (the default, and
+  the original Python tool's behaviour) discards it. `"leading"` gives
+  it the leading species' age. BC VRI records ages for the first two
+  species only; in one extract examined, `PROJ_AGE_2` was blank for most
+  second species and, where recorded, almost always equal to
+  `PROJ_AGE_1`, so `"drop"` removed the second species from three stands
+  in four. The leading species itself is dropped when its own age is
+  missing, under either setting.
 
 ## Value
 

@@ -13,7 +13,7 @@ drops absent or zero-age records, and deduplicates."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">landisbc</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.19</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.20</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -54,7 +54,8 @@ drops absent or zero-age records, and deduplicates.</p>
 <span>  <span class="va">grid_size</span>,</span>
 <span>  <span class="va">SliverThreshold</span>,</span>
 <span>  species_mapping <span class="op">=</span> <span class="va">species_map_bc_vri</span>,</span>
-<span>  n_species <span class="op">=</span> <span class="fl">2L</span></span>
+<span>  n_species <span class="op">=</span> <span class="fl">2L</span>,</span>
+<span>  missing_age <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"drop"</span>, <span class="st">"leading"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -88,6 +89,18 @@ layer study-area-specific lumping on top via a named-vector merge.</p></dd>
 
 <dt id="arg-n-species">n_species<a class="anchor" aria-label="anchor" href="#arg-n-species"></a></dt>
 <dd><p>Number of species/age field pairs to detect (default 2).</p></dd>
+
+
+<dt id="arg-missing-age">missing_age<a class="anchor" aria-label="anchor" href="#arg-missing-age"></a></dt>
+<dd><p>What to do with a species listed after the leading one
+without an age of its own (<code>PROJ_AGE_N</code> missing or zero). <code>"drop"</code> (the
+default, and the original Python tool's behaviour) discards it.
+<code>"leading"</code> gives it the leading species' age. BC VRI records ages for
+the first two species only; in one extract examined, <code>PROJ_AGE_2</code> was
+blank for most second species and, where recorded, almost always equal to
+<code>PROJ_AGE_1</code>, so <code>"drop"</code> removed the second species from three stands in
+four. The leading species itself is dropped when its own age is missing,
+under either setting.</p></dd>
 
 </dl></div>
     <div class="section level2">

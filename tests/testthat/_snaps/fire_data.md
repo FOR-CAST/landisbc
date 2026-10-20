@@ -12,5 +12,5 @@
       load_nbac_polys(bad_path, sa_path, fire_years = 2000:2020)
     Condition
       Error:
-      ! NBAC shapefile is missing expected year/size columns. Found: SOMETHING
+      ! fire-perimeter shapefile is missing expected year/size columns. Found: SOMETHING
 

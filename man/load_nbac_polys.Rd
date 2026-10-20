@@ -4,7 +4,7 @@
 \alias{load_nbac_polys}
 \title{Load NBAC fire perimeters, harmonised + clipped to a study area}
 \usage{
-load_nbac_polys(nbac_shp, study_area_path, fire_years)
+load_nbac_polys(nbac_shp, study_area_path, fire_years, min_size_ha = 1)
 }
 \arguments{
 \item{nbac_shp}{Path to the NBAC polygon shapefile.}
@@ -13,21 +13,22 @@ load_nbac_polys(nbac_shp, study_area_path, fire_years)
 geometry + output CRS).}
 
 \item{fire_years}{Integer vector of fire years to keep.}
+
+\item{min_size_ha}{Minimum reported fire size in hectares to keep (default
+\code{1}); records with a missing (\code{NA}) size are kept regardless.}
 }
 \value{
 A \code{SpatVector} of NBAC perimeters clipped to the study area, in the
 study-area CRS, carrying harmonised \code{YEAR} + \code{SIZE_HA} columns.
 }
 \description{
-Loads National Burned Area Composite (NBAC) fire perimeters and harmonises
-them to the NFDB-poly schema used downstream: \code{SIZE_HA} is taken from the
-adjusted burned area (NBAC's canonical burned-area figure, excluding unburned
-islands/water) and \code{YEAR} from the NBAC year field. Both the year and the
-burned-area columns are detected tolerantly (year: \code{YEAR} or \code{FIRE_YEAR};
-area: \code{ADJ_HA}, \code{POLY_HA}, or \code{HECTARES}), so the loader works across NBAC
-vintages and across the extracts different projects reach them through.
-Filtered to the fire years and \code{SIZE_HA >= 1} ha, projected + clipped to the
-study area.
+A thin pass-through to \code{\link[fireregimetools:load_nbac_polys]{fireregimetools::load_nbac_polys()}}, kept so BC
+projects reach the whole fire-record set through one package. That loader
+harmonises NBAC to the \code{YEAR} + \code{SIZE_HA} schema used downstream (\code{SIZE_HA}
+from the adjusted burned area, NBAC's canonical figure excluding unburned
+islands/water), tolerating the year and burned-area column differences
+between vintages, and filters, projects + clips to the study area. Nothing
+BC-specific is added on top, unlike the two NFDB loaders here.
 }
 \seealso{
 Other BC fire and fuel data:

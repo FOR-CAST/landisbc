@@ -4,7 +4,7 @@
 \alias{load_nfdb_polys}
 \title{Load NFDB fire polygons, filtered + clipped to a study area}
 \usage{
-load_nfdb_polys(nfdb_shp, study_area_path, fire_years)
+load_nfdb_polys(nfdb_shp, study_area_path, fire_years, min_size_ha = 1)
 }
 \arguments{
 \item{nfdb_shp}{Character vector of NFDB polygon shapefile path(s) (the NFDB
@@ -14,16 +14,21 @@ poly record ships multiple multi-year partitions).}
 geometry + output CRS).}
 
 \item{fire_years}{Integer vector of fire years to keep.}
+
+\item{min_size_ha}{Minimum reported fire size in hectares to keep (default
+\code{1}); records with a missing (\code{NA}) size are kept regardless.}
 }
 \value{
 A \code{SpatVector} of NFDB polygons clipped to the study area, in the
 study-area CRS.
 }
 \description{
-Loads National Fire DataBase (NFDB) fire polygons, filters to the fire years
-and \code{SIZE_HA >= 1} ha, and projects + clips to the study area. The year column
-is detected tolerantly (\code{YEAR} or \code{FIRE_YEAR}) so the loader works across
-release vintages and extracts.
+Loads National Fire DataBase (NFDB) fire polygons via
+\code{\link[fireregimetools:load_nfdb_polys]{fireregimetools::load_nfdb_polys()}} -- which binds the record's multi-year
+partitions, tolerates the year/size column differences between release
+vintages, repairs invalid geometries, filters to the fire years and
+\code{min_size_ha}, and projects + clips to the study area -- and adds the
+\code{JULIAN_DAY} column the seasonal splits key on.
 }
 \seealso{
 Other BC fire and fuel data:

@@ -67,12 +67,12 @@ make_eco <- function() {
 }
 
 ## NFDB-style points carrying the columns load_nfdb_points() needs.
-write_nfdb_points <- function(x, y, path) {
+write_nfdb_points <- function(x, y, path, size_ha = 100) {
   p <- terra::vect(cbind(x, y), type = "points", crs = "EPSG:3005")
   p$YEAR <- 2010L
   p$MONTH <- 7L
   p$DAY <- 1L
-  p$SIZE_HA <- 100
+  p$SIZE_HA <- size_ha
   terra::writeVector(p, path, overwrite = TRUE)
   path
 }
@@ -102,6 +102,19 @@ test_that("load_nfdb_points() leaves points untagged and uncropped without an ec
   out <- load_nfdb_points(pts_path, fire_eco_map_path = NULL, fire_years = 2000:2020)
   expect_equal(nrow(out), 3L)
   expect_false("EcoCode" %in% names(out))
+})
+
+test_that("load_nfdb_points() min_size_ha controls the small-fire cutoff", {
+  pts_path <- write_nfdb_points(
+    x = c(60, 180),
+    y = c(60, 300),
+    path = withr::local_tempfile(fileext = ".gpkg"),
+    size_ha = c(0.5, 100)
+  )
+
+  ## the default 1 ha cutoff drops the sub-hectare fire; min_size_ha = 0 keeps it
+  expect_equal(nrow(load_nfdb_points(pts_path, NULL, fire_years = 2000:2020)), 1L)
+  expect_equal(nrow(load_nfdb_points(pts_path, NULL, fire_years = 2000:2020, min_size_ha = 0)), 2L)
 })
 
 test_that("clip_nfdb_to_study_area() drops points off the rasterToMatch's active cells", {

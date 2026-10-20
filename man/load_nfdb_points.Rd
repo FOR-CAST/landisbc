@@ -4,7 +4,12 @@
 \alias{load_nfdb_points}
 \title{Load NFDB fire points, clipped + EcoCode-tagged to a study area}
 \usage{
-load_nfdb_points(nfdb_shp, fire_eco_map_path = NULL, fire_years)
+load_nfdb_points(
+  nfdb_shp,
+  fire_eco_map_path = NULL,
+  fire_years,
+  min_size_ha = 1
+)
 }
 \arguments{
 \item{nfdb_shp}{Path(s) to the NFDB point shapefile(s).}
@@ -15,6 +20,9 @@ restricted to the mapped zones (see Details). \code{NULL} (default) skips the
 EcoCode tagging, leaving the points untagged and uncropped.}
 
 \item{fire_years}{Integer vector of fire years to keep.}
+
+\item{min_size_ha}{Minimum reported fire size in hectares to keep (default
+\code{1}); records with a missing (\code{NA}) size are kept regardless.}
 }
 \value{
 A \code{SpatVector} of NFDB points within the study area (and, when
@@ -22,14 +30,15 @@ A \code{SpatVector} of NFDB points within the study area (and, when
 values are all >= 1).
 }
 \description{
-Loads National Fire DataBase (NFDB) fire points, filters to the study-area
-fire years and \code{SIZE_HA >= 1} ha, projects to the fire-ecoregions grid, and
-(optionally) tags each fire with its fire-ecoregion \code{EcoCode} extracted from a
-fire-ecoregions raster. When \code{fire_eco_map_path} is supplied, fires that do
-not land on a mapped zone are dropped -- this is what restricts the national
-NFDB to the study area, generalised over the N zones (no hard-coded zone). The
-year column is detected tolerantly (\code{YEAR} or \code{FIRE_YEAR}) so the loader works
-across projects.
+Loads National Fire DataBase (NFDB) fire points via
+\code{\link[fireregimetools:load_nfdb_points]{fireregimetools::load_nfdb_points()}} (which filters to the fire years and
+\code{min_size_ha}, and tolerates the \code{YEAR} vs \code{FIRE_YEAR} column difference
+between release vintages), adds the calendar columns the seasonal splits key
+on (\code{DATE}, \code{JULIAN_DAY}), and (optionally) tags each fire with its
+fire-ecoregion \code{EcoCode} extracted from a fire-ecoregions raster. When
+\code{fire_eco_map_path} is supplied, fires that do not land on a mapped zone are
+dropped -- this is what restricts the national NFDB to the study area,
+generalised over the N zones (no hard-coded zone).
 }
 \section{Which points count as "in the study area"}{
 A point is kept only when its extracted \code{EcoCode} is both non-\code{NA} and

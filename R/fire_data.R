@@ -1,23 +1,13 @@
 ## BC fire-history + provincial fuel-type data helpers (BC-specific).
 ##
-## Loaders for the national fire records (NFDB points/polygons, NBAC perimeters)
-## clipped to a study area, plus the provincial "BC Wildfire Fire Fuel Types -
-## Public" fuel raster and its recent-disturbance mask. These feed the Dynamic
-## Fire / Dynamic Fuels inputs and the fire calibration targets.
-##
-## Provenance:
-##   * De-duplicated from code shared between two downstream LANDIS-II projects.
-
-# ---- Internal helpers --------------------------------------------------------
-
-## Column tolerance: the NFDB and NBAC attribute schemas differ between release
-## vintages, and downstream projects reach these records through different
-## extracts (e.g. YEAR vs FIRE_YEAR for the year field; ADJ_HA vs POLY_HA vs
-## HECTARES for the burned-area field). Pick the first candidate column present,
-## or NA when none match (callers decide whether a missing column is fatal).
-.first_col <- function(x, candidates) {
-  intersect(candidates, names(x))[1L]
-}
+## Reading the national fire records (NFDB points/polygons, NBAC perimeters) belongs to
+## fireregimetools: it reads each source, tolerates the year/size column differences between
+## release vintages, repairs invalid perimeter geometries, and projects + crops to a study area.
+## The loaders here delegate that and add only what is BC- and LANDIS-specific: the calendar
+## columns the seasonal splits key on, and the fire-ecoregion EcoCode tagging that restricts the
+## national record to the simulated landscape. Also here: the provincial "BC Wildfire Fire Fuel
+## Types - Public" fuel raster and its recent-disturbance mask. These feed the Dynamic Fire /
+## Dynamic Fuels inputs and the fire calibration targets.
 
 ## bcdata object id for "BC Wildfire Fire Fuel Types - Public" (FUEL_TYPE_CD; last built on 2023 VRI).
 BC_FUEL_TYPES_BCDC_ID <- "e18ef98c-e1bf-43ac-95e4-b473452f32ec"
@@ -26,14 +16,15 @@ BC_FUEL_TYPES_BCDC_ID <- "e18ef98c-e1bf-43ac-95e4-b473452f32ec"
 
 #' Load NFDB fire points, clipped + EcoCode-tagged to a study area
 #'
-#' Loads National Fire DataBase (NFDB) fire points, filters to the study-area
-#' fire years and `SIZE_HA >= 1` ha, projects to the fire-ecoregions grid, and
-#' (optionally) tags each fire with its fire-ecoregion `EcoCode` extracted from a
-#' fire-ecoregions raster. When `fire_eco_map_path` is supplied, fires that do
-#' not land on a mapped zone are dropped -- this is what restricts the national
-#' NFDB to the study area, generalised over the N zones (no hard-coded zone). The
-#' year column is detected tolerantly (`YEAR` or `FIRE_YEAR`) so the loader works
-#' across projects.
+#' Loads National Fire DataBase (NFDB) fire points via
+#' [fireregimetools::load_nfdb_points()] (which filters to the fire years and
+#' `min_size_ha`, and tolerates the `YEAR` vs `FIRE_YEAR` column difference
+#' between release vintages), adds the calendar columns the seasonal splits key
+#' on (`DATE`, `JULIAN_DAY`), and (optionally) tags each fire with its
+#' fire-ecoregion `EcoCode` extracted from a fire-ecoregions raster. When
+#' `fire_eco_map_path` is supplied, fires that do not land on a mapped zone are
+#' dropped -- this is what restricts the national NFDB to the study area,
+#' generalised over the N zones (no hard-coded zone).
 #'
 #' # Which points count as "in the study area"
 #'
@@ -65,6 +56,8 @@ BC_FUEL_TYPES_BCDC_ID <- "e18ef98c-e1bf-43ac-95e4-b473452f32ec"
 #'   restricted to the mapped zones (see Details). `NULL` (default) skips the
 #'   EcoCode tagging, leaving the points untagged and uncropped.
 #' @param fire_years Integer vector of fire years to keep.
+#' @param min_size_ha Minimum reported fire size in hectares to keep (default
+#'   `1`); records with a missing (`NA`) size are kept regardless.
 #'
 #' @returns A `SpatVector` of NFDB points within the study area (and, when
 #'   `fire_eco_map_path` is supplied, carrying an integer `EcoCode` column whose
@@ -72,26 +65,24 @@ BC_FUEL_TYPES_BCDC_ID <- "e18ef98c-e1bf-43ac-95e4-b473452f32ec"
 #'
 #' @family BC fire and fuel data
 #' @export
-load_nfdb_points <- function(nfdb_shp, fire_eco_map_path = NULL, fire_years) {
-  p <- withCallingHandlers(terra::vect(nfdb_shp), warning = function(w) {
-    if (grepl("Z coordinates ignored", conditionMessage(w))) invokeRestart("muffleWarning")
-  })
-  ## Tolerate either project's year column (YEAR vs FIRE_YEAR) before filtering.
-  year_col <- .first_col(p, c("YEAR", "FIRE_YEAR"))
-  p <- p[terra::is.valid(p), ] |> ## terra::makeValid is slow; drop the few invalid geometries
-    tidyterra::mutate(
-      YEAR = as.integer(.data[[year_col]]),
-      MONTH = as.integer(MONTH),
-      DAY = as.integer(DAY)
-    ) |>
+load_nfdb_points <- function(nfdb_shp, fire_eco_map_path = NULL, fire_years, min_size_ha = 1) {
+  eco <- if (is.null(fire_eco_map_path)) NULL else terra::rast(fire_eco_map_path)
+  ## Passing the ecoregions raster as the study area projects the points to its CRS and pre-filters
+  ## them to its extent; the EcoCode filter below is the authoritative selection, since a raster's
+  ## extent is a bounding box while its mapped zones are not. `study_area = NULL` leaves the record
+  ## whole, in its source CRS, for a caller that subsets by its own geometry downstream.
+  p <- fireregimetools::load_nfdb_points(
+    nfdb_shp,
+    study_area = eco,
+    fire_years = fire_years,
+    min_size_ha = min_size_ha
+  ) |>
+    tidyterra::mutate(MONTH = as.integer(MONTH), DAY = as.integer(DAY)) |>
     tidyterra::mutate(DATE = as.Date(paste(YEAR, MONTH, DAY, sep = "-")), .before = "YEAR") |>
-    tidyterra::mutate(JULIAN_DAY = as.integer(format(DATE, "%j")), .after = "DAY") |>
-    tidyterra::filter(YEAR %in% !!fire_years, SIZE_HA >= 1.0)
-  if (is.null(fire_eco_map_path)) {
+    tidyterra::mutate(JULIAN_DAY = as.integer(format(DATE, "%j")), .after = "DAY")
+  if (is.null(eco)) {
     return(p)
   }
-  eco <- terra::rast(fire_eco_map_path)
-  p <- terra::project(p, terra::crs(eco))
   p$EcoCode <- terra::extract(eco, p)[[2L]]
   ## `> 0` as well as `!is.na()`: 0 is LANDIS-II's inactive-cell code, so an NA-only filter
   ## keeps everything in the raster's bounding box rather than in the study area. See Details.
@@ -100,101 +91,81 @@ load_nfdb_points <- function(nfdb_shp, fire_eco_map_path = NULL, fire_years) {
 
 #' Load NFDB fire polygons, filtered + clipped to a study area
 #'
-#' Loads National Fire DataBase (NFDB) fire polygons, filters to the fire years
-#' and `SIZE_HA >= 1` ha, and projects + clips to the study area. The year column
-#' is detected tolerantly (`YEAR` or `FIRE_YEAR`) so the loader works across
-#' release vintages and extracts.
+#' Loads National Fire DataBase (NFDB) fire polygons via
+#' [fireregimetools::load_nfdb_polys()] -- which binds the record's multi-year
+#' partitions, tolerates the year/size column differences between release
+#' vintages, repairs invalid geometries, filters to the fire years and
+#' `min_size_ha`, and projects + clips to the study area -- and adds the
+#' `JULIAN_DAY` column the seasonal splits key on.
 #'
 #' @param nfdb_shp Character vector of NFDB polygon shapefile path(s) (the NFDB
 #'   poly record ships multiple multi-year partitions).
 #' @param study_area_path Path to the study-area vector (defines the clip
 #'   geometry + output CRS).
 #' @param fire_years Integer vector of fire years to keep.
+#' @param min_size_ha Minimum reported fire size in hectares to keep (default
+#'   `1`); records with a missing (`NA`) size are kept regardless.
 #'
 #' @returns A `SpatVector` of NFDB polygons clipped to the study area, in the
 #'   study-area CRS.
 #'
 #' @family BC fire and fuel data
 #' @export
-load_nfdb_polys <- function(nfdb_shp, study_area_path, fire_years) {
-  sa <- terra::vect(study_area_path)
-  p <- lapply(nfdb_shp, function(x) {
-    pp <- withCallingHandlers(terra::vect(x), warning = function(w) {
-      if (grepl("Z coordinates ignored", conditionMessage(w))) invokeRestart("muffleWarning")
-    })
-    pp[terra::is.valid(pp), ] ## terra::makeValid is slow; drop the few invalid geometries
-  }) |>
-    tidyterra::bind_spat_rows() ## robust to column differences between the two NFDB partitions
-  ## Tolerate either project's year column (YEAR vs FIRE_YEAR) before filtering.
-  year_col <- .first_col(p, c("YEAR", "FIRE_YEAR"))
-  p <- p |>
+load_nfdb_polys <- function(nfdb_shp, study_area_path, fire_years, min_size_ha = 1) {
+  fireregimetools::load_nfdb_polys(
+    nfdb_shp,
+    study_area = study_area_path,
+    fire_years = fire_years,
+    min_size_ha = min_size_ha
+  ) |>
     tidyterra::mutate(
-      YEAR = as.integer(.data[[year_col]]),
       MONTH = as.integer(MONTH),
-      DAY = as.integer(DAY)
-    ) |>
-    tidyterra::mutate(
+      DAY = as.integer(DAY),
       JULIAN_DAY = as.integer(format(as.Date(paste(YEAR, MONTH, DAY, sep = "-")), "%j"))
-    ) |>
-    tidyterra::filter(YEAR %in% !!fire_years, SIZE_HA >= 1.0) |>
-    terra::project(terra::crs(sa))
-  terra::crop(p, sa) ## clip to the study area
+    )
 }
 
 # ---- National Burned Area Composite (NBAC, CWFIS) ----------------------------
 ## NBAC perimeters are satellite-derived (best-available delineation, excluding unburned islands and
-## interior water) and span 1972-present; they are preferred over the NFDB polygon record, whose older
-## perimeters are aerial sketches that overestimate burned area. NFDB polygons are kept only as a
-## backfill for years NBAC does not cover.
+## interior water) and span 1972-present; they are preferred over the NFDB polygon record. The NFDB
+## documentation claims no accuracy for its own perimeters, saying only that accuracy "varies due to
+## different mapping techniques" and that quality varies "among agencies and between years"
+## (Canadian Forest Service 2021). The comparison is quantified in the NBAC literature: agency
+## perimeters remove unburned islands and interior water only inconsistently (Hall et al. 2020,
+## doi:10.1071/WF19201), and CNFDB annual burned-area estimates carry confidence intervals about
+## three times the width of NBAC's, with retroactive Landsat mapping of NWT fires cutting the
+## historical estimate by 3 Mha (16%) (Skakun et al. 2022, doi:10.3390/rs14133050). NFDB polygons
+## are kept only as a backfill for years NBAC does not cover.
 
 #' Load NBAC fire perimeters, harmonised + clipped to a study area
 #'
-#' Loads National Burned Area Composite (NBAC) fire perimeters and harmonises
-#' them to the NFDB-poly schema used downstream: `SIZE_HA` is taken from the
-#' adjusted burned area (NBAC's canonical burned-area figure, excluding unburned
-#' islands/water) and `YEAR` from the NBAC year field. Both the year and the
-#' burned-area columns are detected tolerantly (year: `YEAR` or `FIRE_YEAR`;
-#' area: `ADJ_HA`, `POLY_HA`, or `HECTARES`), so the loader works across NBAC
-#' vintages and across the extracts different projects reach them through.
-#' Filtered to the fire years and `SIZE_HA >= 1` ha, projected + clipped to the
-#' study area.
+#' A thin pass-through to [fireregimetools::load_nbac_polys()], kept so BC
+#' projects reach the whole fire-record set through one package. That loader
+#' harmonises NBAC to the `YEAR` + `SIZE_HA` schema used downstream (`SIZE_HA`
+#' from the adjusted burned area, NBAC's canonical figure excluding unburned
+#' islands/water), tolerating the year and burned-area column differences
+#' between vintages, and filters, projects + clips to the study area. Nothing
+#' BC-specific is added on top, unlike the two NFDB loaders here.
 #'
 #' @param nbac_shp Path to the NBAC polygon shapefile.
 #' @param study_area_path Path to the study-area vector (defines the clip
 #'   geometry + output CRS).
 #' @param fire_years Integer vector of fire years to keep.
+#' @param min_size_ha Minimum reported fire size in hectares to keep (default
+#'   `1`); records with a missing (`NA`) size are kept regardless.
 #'
 #' @returns A `SpatVector` of NBAC perimeters clipped to the study area, in the
 #'   study-area CRS, carrying harmonised `YEAR` + `SIZE_HA` columns.
 #'
 #' @family BC fire and fuel data
 #' @export
-load_nbac_polys <- function(nbac_shp, study_area_path, fire_years) {
-  sa <- terra::vect(study_area_path)
-  p <- withCallingHandlers(terra::vect(nbac_shp), warning = function(w) {
-    if (grepl("Z coordinates ignored", conditionMessage(w))) invokeRestart("muffleWarning")
-  })
-  p <- p[terra::is.valid(p), ] ## drop the few invalid geometries (terra::makeValid is slow)
-  ## Tolerate either project's / vintage's year + burned-area columns.
-  year_col <- .first_col(p, c("YEAR", "FIRE_YEAR"))
-  size_col <- .first_col(p, c("ADJ_HA", "POLY_HA", "HECTARES"))
-  if (is.na(year_col) || is.na(size_col)) {
-    stop(
-      sprintf(
-        "NBAC shapefile is missing expected year/size columns. Found: %s",
-        paste(names(p), collapse = ", ")
-      ),
-      call. = FALSE
-    )
-  }
-  p <- tidyterra::mutate(
-    p,
-    YEAR = as.integer(.data[[year_col]]),
-    SIZE_HA = as.numeric(.data[[size_col]])
+load_nbac_polys <- function(nbac_shp, study_area_path, fire_years, min_size_ha = 1) {
+  fireregimetools::load_nbac_polys(
+    nbac_shp,
+    study_area = study_area_path,
+    fire_years = fire_years,
+    min_size_ha = min_size_ha
   )
-  p <- tidyterra::filter(p, YEAR %in% !!fire_years, SIZE_HA >= 1.0)
-  p <- terra::project(p, terra::crs(sa))
-  terra::crop(p, sa) ## clip to the study area
 }
 
 #' Clip national NFDB fire points to a study area

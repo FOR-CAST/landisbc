@@ -1,19 +1,25 @@
 # Load NFDB fire points, clipped + EcoCode-tagged to a study area
 
-Loads National Fire DataBase (NFDB) fire points, filters to the
-study-area fire years and `SIZE_HA >= 1` ha, projects to the
-fire-ecoregions grid, and (optionally) tags each fire with its
-fire-ecoregion `EcoCode` extracted from a fire-ecoregions raster. When
-`fire_eco_map_path` is supplied, fires that do not land on a mapped zone
-are dropped – this is what restricts the national NFDB to the study
-area, generalised over the N zones (no hard-coded zone). The year column
-is detected tolerantly (`YEAR` or `FIRE_YEAR`) so the loader works
-across projects.
+Loads National Fire DataBase (NFDB) fire points via
+[`fireregimetools::load_nfdb_points()`](https://rdrr.io/pkg/fireregimetools/man/load_nfdb_points.html)
+(which filters to the fire years and `min_size_ha`, and tolerates the
+`YEAR` vs `FIRE_YEAR` column difference between release vintages), adds
+the calendar columns the seasonal splits key on (`DATE`, `JULIAN_DAY`),
+and (optionally) tags each fire with its fire-ecoregion `EcoCode`
+extracted from a fire-ecoregions raster. When `fire_eco_map_path` is
+supplied, fires that do not land on a mapped zone are dropped – this is
+what restricts the national NFDB to the study area, generalised over the
+N zones (no hard-coded zone).
 
 ## Usage
 
 ``` r
-load_nfdb_points(nfdb_shp, fire_eco_map_path = NULL, fire_years)
+load_nfdb_points(
+  nfdb_shp,
+  fire_eco_map_path = NULL,
+  fire_years,
+  min_size_ha = 1
+)
 ```
 
 ## Arguments
@@ -32,6 +38,11 @@ load_nfdb_points(nfdb_shp, fire_eco_map_path = NULL, fire_years)
 - fire_years:
 
   Integer vector of fire years to keep.
+
+- min_size_ha:
+
+  Minimum reported fire size in hectares to keep (default `1`); records
+  with a missing (`NA`) size are kept regardless.
 
 ## Value
 

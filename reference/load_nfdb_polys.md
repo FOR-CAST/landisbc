@@ -1,14 +1,17 @@
 # Load NFDB fire polygons, filtered + clipped to a study area
 
-Loads National Fire DataBase (NFDB) fire polygons, filters to the fire
-years and `SIZE_HA >= 1` ha, and projects + clips to the study area. The
-year column is detected tolerantly (`YEAR` or `FIRE_YEAR`) so the loader
-works across release vintages and extracts.
+Loads National Fire DataBase (NFDB) fire polygons via
+[`fireregimetools::load_nfdb_polys()`](https://rdrr.io/pkg/fireregimetools/man/load_nfdb_polys.html)
+– which binds the record's multi-year partitions, tolerates the
+year/size column differences between release vintages, repairs invalid
+geometries, filters to the fire years and `min_size_ha`, and projects +
+clips to the study area – and adds the `JULIAN_DAY` column the seasonal
+splits key on.
 
 ## Usage
 
 ``` r
-load_nfdb_polys(nfdb_shp, study_area_path, fire_years)
+load_nfdb_polys(nfdb_shp, study_area_path, fire_years, min_size_ha = 1)
 ```
 
 ## Arguments
@@ -26,6 +29,11 @@ load_nfdb_polys(nfdb_shp, study_area_path, fire_years)
 - fire_years:
 
   Integer vector of fire years to keep.
+
+- min_size_ha:
+
+  Minimum reported fire size in hectares to keep (default `1`); records
+  with a missing (`NA`) size are kept regardless.
 
 ## Value
 

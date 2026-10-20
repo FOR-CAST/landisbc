@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">landisbc</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.21</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.22</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -32,6 +32,14 @@
       <small>Source: <a href="https://github.com/FOR-CAST/landisbc/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.22" id="landisbc-0022">landisbc 0.0.22<a class="anchor" aria-label="anchor" href="#landisbc-0022"></a></h2>
+<ul><li>
+<code><a href="../reference/load_nbac_polys.html">load_nbac_polys()</a></code>, <code><a href="../reference/load_nfdb_polys.html">load_nfdb_polys()</a></code> and <code><a href="../reference/load_nfdb_points.html">load_nfdb_points()</a></code> now read the national fire records through <code>fireregimetools</code> instead of carrying their own copy of that code, and all three gain <code>min_size_ha</code> (default <code>1</code>, the cutoff they previously hardcoded). What stays here is what is BC- and LANDIS-specific: the <code>DATE</code> / <code>JULIAN_DAY</code> calendar columns the seasonal splits key on, and the fire-ecoregion <code>EcoCode</code> tagging that restricts the national NFDB to the simulated landscape. <code><a href="../reference/load_nbac_polys.html">load_nbac_polys()</a></code> adds nothing and is now a pass-through, kept so a project reaches the whole fire-record set through one package.</li>
+<li>Three behaviours change with the shared reader, so a fire record loaded by this version is NOT identical to one loaded by 0.0.21 – rebuild rather than compare. Invalid perimeter geometries are repaired rather than dropped (851 of the NFDB polygon record’s 48,571 national polygons are invalid; measured over one BC natural-resource district and 1950-2024, the repair recovers 1 of 604 NFDB perimeters and adds 6,035 ha to 1,672,119 ha of reported burned area, leaving the median and maximum fire size unchanged; the NBAC perimeters and the EcoCode-tagged ignition points come back identical over the same area). A record with a missing (<code>NA</code>) reported size is now kept rather than silently dropped by the size filter. And the study-area filter is pushed down to the GDAL read, so the national file is no longer materialised in full – the same records, read without the memory cost.</li>
+<li>
+<code><a href="../reference/load_nbac_polys.html">load_nbac_polys()</a></code>’s “missing expected year/size columns” error now comes from <code>fireregimetools</code> and says “fire-perimeter shapefile” where it used to say “NBAC shapefile”.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.0.21" id="landisbc-0021">landisbc 0.0.21<a class="anchor" aria-label="anchor" href="#landisbc-0021"></a></h2>
 <ul><li>

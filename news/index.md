@@ -1,5 +1,39 @@
 # Changelog
 
+## landisbc 0.0.22
+
+- [`load_nbac_polys()`](https://for-cast.github.io/landisbc/reference/load_nbac_polys.md),
+  [`load_nfdb_polys()`](https://for-cast.github.io/landisbc/reference/load_nfdb_polys.md)
+  and
+  [`load_nfdb_points()`](https://for-cast.github.io/landisbc/reference/load_nfdb_points.md)
+  now read the national fire records through `fireregimetools` instead
+  of carrying their own copy of that code, and all three gain
+  `min_size_ha` (default `1`, the cutoff they previously hardcoded).
+  What stays here is what is BC- and LANDIS-specific: the `DATE` /
+  `JULIAN_DAY` calendar columns the seasonal splits key on, and the
+  fire-ecoregion `EcoCode` tagging that restricts the national NFDB to
+  the simulated landscape.
+  [`load_nbac_polys()`](https://for-cast.github.io/landisbc/reference/load_nbac_polys.md)
+  adds nothing and is now a pass-through, kept so a project reaches the
+  whole fire-record set through one package.
+- Three behaviours change with the shared reader, so a fire record
+  loaded by this version is NOT identical to one loaded by 0.0.21 –
+  rebuild rather than compare. Invalid perimeter geometries are repaired
+  rather than dropped (851 of the NFDB polygon record’s 48,571 national
+  polygons are invalid; measured over one BC natural-resource district
+  and 1950-2024, the repair recovers 1 of 604 NFDB perimeters and adds
+  6,035 ha to 1,672,119 ha of reported burned area, leaving the median
+  and maximum fire size unchanged; the NBAC perimeters and the
+  EcoCode-tagged ignition points come back identical over the same
+  area). A record with a missing (`NA`) reported size is now kept rather
+  than silently dropped by the size filter. And the study-area filter is
+  pushed down to the GDAL read, so the national file is no longer
+  materialised in full – the same records, read without the memory cost.
+- [`load_nbac_polys()`](https://for-cast.github.io/landisbc/reference/load_nbac_polys.md)’s
+  “missing expected year/size columns” error now comes from
+  `fireregimetools` and says “fire-perimeter shapefile” where it used to
+  say “NBAC shapefile”.
+
 ## landisbc 0.0.21
 
 - [`ProcessInitialCommunitiesData()`](https://for-cast.github.io/landisbc/reference/ProcessInitialCommunitiesData.md)

@@ -1,19 +1,19 @@
 # Load NBAC fire perimeters, harmonised + clipped to a study area
 
-Loads National Burned Area Composite (NBAC) fire perimeters and
-harmonises them to the NFDB-poly schema used downstream: `SIZE_HA` is
-taken from the adjusted burned area (NBAC's canonical burned-area
-figure, excluding unburned islands/water) and `YEAR` from the NBAC year
-field. Both the year and the burned-area columns are detected tolerantly
-(year: `YEAR` or `FIRE_YEAR`; area: `ADJ_HA`, `POLY_HA`, or `HECTARES`),
-so the loader works across NBAC vintages and across the extracts
-different projects reach them through. Filtered to the fire years and
-`SIZE_HA >= 1` ha, projected + clipped to the study area.
+A thin pass-through to
+[`fireregimetools::load_nbac_polys()`](https://rdrr.io/pkg/fireregimetools/man/load_nbac_polys.html),
+kept so BC projects reach the whole fire-record set through one package.
+That loader harmonises NBAC to the `YEAR` + `SIZE_HA` schema used
+downstream (`SIZE_HA` from the adjusted burned area, NBAC's canonical
+figure excluding unburned islands/water), tolerating the year and
+burned-area column differences between vintages, and filters, projects +
+clips to the study area. Nothing BC-specific is added on top, unlike the
+two NFDB loaders here.
 
 ## Usage
 
 ``` r
-load_nbac_polys(nbac_shp, study_area_path, fire_years)
+load_nbac_polys(nbac_shp, study_area_path, fire_years, min_size_ha = 1)
 ```
 
 ## Arguments
@@ -30,6 +30,11 @@ load_nbac_polys(nbac_shp, study_area_path, fire_years)
 - fire_years:
 
   Integer vector of fire years to keep.
+
+- min_size_ha:
+
+  Minimum reported fire size in hectares to keep (default `1`); records
+  with a missing (`NA`) size are kept regardless.
 
 ## Value
 

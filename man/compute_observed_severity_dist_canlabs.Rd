@@ -23,6 +23,7 @@ drop-in for \code{landisutils::save_observed_fire_targets()}'s \code{severity_di
 }
 \seealso{
 Other CanLaBS fire severity:
+\code{\link{CANLABS_V2_YEARS}},
 \code{\link[=canlabs_v2_files]{canlabs_v2_files()}},
 \code{\link[=classify_canlabs_dnbr]{classify_canlabs_dnbr()}},
 \code{\link[=fit_canlabs_thresholds]{fit_canlabs_thresholds()}},

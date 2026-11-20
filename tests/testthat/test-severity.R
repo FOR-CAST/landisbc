@@ -93,6 +93,30 @@ test_that("classify_canlabs_dnbr() accepts a bare threshold vector + returns hec
   expect_equal(unname(a), c(50, 30, 20) * 1e-4)
 })
 
+## A perimeter from a year CanLaBS does not cover still holds dNBR wherever a later, covered fire
+## burned the same ground, and that value is the later fire's. Year-filtering must drop such years,
+## not keep their perimeters.
+test_that("get_canlabs_dnbr() keeps only perimeters from years the product covers", {
+  dir <- withr::local_tempdir()
+  terra::writeRaster(make_dnbr(), file.path(dir, "dnbr.tif"))
+  nbac <- sf::st_sf(
+    FIRE_YEAR = c(1983L, 1990L),
+    geometry = sf::st_sfc(rect(0, 0, 5, 10), rect(5, 0, 5, 10), crs = 3005)
+  )
+  scope <- sf::st_sf(geometry = sf::st_sfc(rect(0, 0, 10, 10), crs = 3005))
+  get <- function(years) {
+    get_canlabs_dnbr(dir, scope, nbac, years, drop_salvage = FALSE, files = c(dnbr = "dnbr.tif"))
+  }
+
+  expect_message(r <- get(1980:1995), "dropping 5 fire year\\(s\\) outside 1985-2024")
+  v <- terra::values(r, mat = FALSE)
+  ## only the 1990 perimeter (the right half, columns 6-10) survives
+  expect_equal(sum(!is.na(v)), 50L)
+  expect_equal(min(v, na.rm = TRUE), 6)
+
+  expect_error(suppressMessages(get(1971:1984)), "no fire years within CanLaBS coverage")
+})
+
 test_that("fit_canlabs_thresholds() errors when BC has no burned classes", {
   bc <- sf::st_sf(
     BURN_SEVERITY_RATING = factor("Unburned"),

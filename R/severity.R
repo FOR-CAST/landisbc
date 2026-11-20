@@ -257,6 +257,18 @@ canlabs_v2_files <- function() {
   )
 }
 
+#' Fire years CanLaBS v2 covers
+#'
+#' The product maps dNBR for the fires of 1985-2024, the years in its file names
+#' ([canlabs_v2_files()]). A perimeter from any other year can still hold dNBR,
+#' wherever a covered fire later burned the same ground, and that value is the
+#' later fire's. [get_canlabs_dnbr()] therefore drops fire years outside this
+#' range instead of keeping their perimeters.
+#'
+#' @family CanLaBS fire severity
+#' @export
+CANLABS_V2_YEARS <- 1985L:2024L
+
 ## Harmonise the NBAC year column across the naming variants the two projects use.
 .nbac_year <- function(x) {
   cand <- c("FIRE_YEAR", "YEAR", "NFIREID_YEAR", "EODATE_YEAR")
@@ -278,6 +290,27 @@ canlabs_v2_files <- function() {
   thr
 }
 
+## Drop fire years CanLaBS v2 does not cover (CANLABS_V2_YEARS), saying how many, and stop when
+## none is left: an empty year filter would otherwise mask every pixel without saying why.
+.canlabs_covered_years <- function(fire_years) {
+  yrs <- unique(as.integer(fire_years))
+  yrs <- yrs[!is.na(yrs)]
+  covered <- yrs[yrs %in% CANLABS_V2_YEARS]
+  span <- sprintf("%d-%d", min(CANLABS_V2_YEARS), max(CANLABS_V2_YEARS))
+  dropped <- length(yrs) - length(covered)
+  if (dropped > 0L) {
+    message(sprintf(
+      "get_canlabs_dnbr(): dropping %d fire year(s) outside %s (no CanLaBS v2 coverage)",
+      dropped,
+      span
+    ))
+  }
+  if (!length(covered)) {
+    stop("get_canlabs_dnbr(): no fire years within CanLaBS coverage (", span, ").", call. = FALSE)
+  }
+  covered
+}
+
 #' Load CanLaBS v2 dNBR over a scope, salvage-masked and year-filtered
 #'
 #' Reads the staged CanLaBS v2 GeoTIFFs, crops and masks the dNBR layer to
@@ -294,7 +327,9 @@ canlabs_v2_files <- function() {
 #' @param scope_polys `sf`/`sfc` scope (e.g. the fire-regime polygons).
 #' @param nbac_polys `sf` NBAC perimeters with a year column; required if
 #'   `fire_years` is used for temporal filtering.
-#' @param fire_years Integer vector of years to keep, or `NULL` for all.
+#' @param fire_years Integer vector of years to keep, or `NULL` for all. Years
+#'   outside [CANLABS_V2_YEARS] are dropped with a message, and it is an error
+#'   when none is left.
 #' @param drop_salvage Logical; if `TRUE` (default) sets salvage-logged pixels
 #'   (mask value 1) to `NA`.
 #' @param files Named character vector of layer filenames; see [canlabs_v2_files()].
@@ -350,8 +385,10 @@ get_canlabs_dnbr <- function(
     dnbr <- terra::mask(dnbr, salv, maskvalues = 1)
   }
 
-  ## Restrict to fires in `fire_years` via the caller's NBAC perimeters.
+  ## Restrict to fires in `fire_years` via the caller's NBAC perimeters, keeping only the years the
+  ## product covers.
   if (!is.null(fire_years) && !is.null(nbac_polys)) {
+    fire_years <- .canlabs_covered_years(fire_years)
     yr <- .nbac_year(nbac_polys)
     keep <- sf::st_geometry(nbac_polys[!is.na(yr) & yr %in% fire_years, ])
     if (length(keep) == 0L) {

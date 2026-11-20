@@ -25,6 +25,7 @@ Medium < High.
 }
 \seealso{
 Other CanLaBS fire severity:
+\code{\link{CANLABS_V2_YEARS}},
 \code{\link[=canlabs_v2_files]{canlabs_v2_files()}},
 \code{\link[=classify_canlabs_dnbr]{classify_canlabs_dnbr()}},
 \code{\link[=compute_observed_severity_dist_canlabs]{compute_observed_severity_dist_canlabs()}},

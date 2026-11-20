@@ -1,3 +1,7 @@
+# landisbc 0.0.23
+
+* `get_canlabs_dnbr()` drops fire years that CanLaBS v2 does not cover (new `CANLABS_V2_YEARS`, 1985-2024) before masking to the caller's NBAC perimeters, with a message saying how many, and stops when none is left. It used to keep every perimeter of every requested year. A perimeter from an uncovered year still holds dNBR wherever a covered fire later burned the same ground, so that later fire's severity was counted as the earlier fire's. Over one BC natural-resource district and a 1971-2000 window this was about 13% of the burned area scored, from perimeters of 1973, 1982 and 1983.
+
 # landisbc 0.0.22
 
 * `load_nbac_polys()`, `load_nfdb_polys()` and `load_nfdb_points()` now read the national fire records through `fireregimetools` instead of carrying their own copy of that code, and all three gain `min_size_ha` (default `1`, the cutoff they previously hardcoded). What stays here is what is BC- and LANDIS-specific: the `DATE` / `JULIAN_DAY` calendar columns the seasonal splits key on, and the fire-ecoregion `EcoCode` tagging that restricts the national NFDB to the simulated landscape. `load_nbac_polys()` adds nothing and is now a pass-through, kept so a project reaches the whole fire-record set through one package.

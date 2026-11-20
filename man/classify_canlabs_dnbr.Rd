@@ -20,6 +20,7 @@ Classify CanLaBS dNBR into BC burned classes and return area by class
 }
 \seealso{
 Other CanLaBS fire severity:
+\code{\link{CANLABS_V2_YEARS}},
 \code{\link[=canlabs_v2_files]{canlabs_v2_files()}},
 \code{\link[=compute_observed_severity_dist_canlabs]{compute_observed_severity_dist_canlabs()}},
 \code{\link[=fit_canlabs_thresholds]{fit_canlabs_thresholds()}},

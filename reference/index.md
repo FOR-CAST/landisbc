@@ -5,6 +5,9 @@
 - [`BC_SEVERITY_FIRST_YEAR`](https://for-cast.github.io/landisbc/reference/BC_SEVERITY_FIRST_YEAR.md)
   : First fire year with BC Fire Burn Severity coverage
 
+- [`CANLABS_V2_YEARS`](https://for-cast.github.io/landisbc/reference/CANLABS_V2_YEARS.md)
+  : Fire years CanLaBS v2 covers
+
 - [`CleanMapCodes()`](https://for-cast.github.io/landisbc/reference/CleanMapCodes.md)
   : Assign canonical map codes, collapsing duplicate communities
 

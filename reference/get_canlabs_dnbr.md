@@ -36,7 +36,9 @@ get_canlabs_dnbr(
 
 - fire_years:
 
-  Integer vector of years to keep, or `NULL` for all.
+  Integer vector of years to keep, or `NULL` for all. Years outside
+  [CANLABS_V2_YEARS](https://for-cast.github.io/landisbc/reference/CANLABS_V2_YEARS.md)
+  are dropped with a message, and it is an error when none is left.
 
 - drop_salvage:
 
@@ -62,6 +64,7 @@ documented in the product readme; pass the project's NBAC polygons as
 ## See also
 
 Other CanLaBS fire severity:
+[`CANLABS_V2_YEARS`](https://for-cast.github.io/landisbc/reference/CANLABS_V2_YEARS.md),
 [`canlabs_v2_files()`](https://for-cast.github.io/landisbc/reference/canlabs_v2_files.md),
 [`classify_canlabs_dnbr()`](https://for-cast.github.io/landisbc/reference/classify_canlabs_dnbr.md),
 [`compute_observed_severity_dist_canlabs()`](https://for-cast.github.io/landisbc/reference/compute_observed_severity_dist_canlabs.md),

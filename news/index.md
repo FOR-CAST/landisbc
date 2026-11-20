@@ -1,5 +1,18 @@
 # Changelog
 
+## landisbc 0.0.23
+
+- [`get_canlabs_dnbr()`](https://for-cast.github.io/landisbc/reference/get_canlabs_dnbr.md)
+  drops fire years that CanLaBS v2 does not cover (new
+  `CANLABS_V2_YEARS`, 1985-2024) before masking to the caller’s NBAC
+  perimeters, with a message saying how many, and stops when none is
+  left. It used to keep every perimeter of every requested year. A
+  perimeter from an uncovered year still holds dNBR wherever a covered
+  fire later burned the same ground, so that later fire’s severity was
+  counted as the earlier fire’s. Over one BC natural-resource district
+  and a 1971-2000 window this was about 13% of the burned area scored,
+  from perimeters of 1973, 1982 and 1983.
+
 ## landisbc 0.0.22
 
 - [`load_nbac_polys()`](https://for-cast.github.io/landisbc/reference/load_nbac_polys.md),

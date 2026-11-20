@@ -35,6 +35,7 @@ A list with `thresholds` (named numeric `c(lowmed =, medhigh =)`),
 ## See also
 
 Other CanLaBS fire severity:
+[`CANLABS_V2_YEARS`](https://for-cast.github.io/landisbc/reference/CANLABS_V2_YEARS.md),
 [`canlabs_v2_files()`](https://for-cast.github.io/landisbc/reference/canlabs_v2_files.md),
 [`classify_canlabs_dnbr()`](https://for-cast.github.io/landisbc/reference/classify_canlabs_dnbr.md),
 [`compute_observed_severity_dist_canlabs()`](https://for-cast.github.io/landisbc/reference/compute_observed_severity_dist_canlabs.md),

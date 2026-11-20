@@ -28,6 +28,7 @@ Named numeric vector `c(Low =, Medium =, High =)` of burned area (ha).
 ## See also
 
 Other CanLaBS fire severity:
+[`CANLABS_V2_YEARS`](https://for-cast.github.io/landisbc/reference/CANLABS_V2_YEARS.md),
 [`canlabs_v2_files()`](https://for-cast.github.io/landisbc/reference/canlabs_v2_files.md),
 [`compute_observed_severity_dist_canlabs()`](https://for-cast.github.io/landisbc/reference/compute_observed_severity_dist_canlabs.md),
 [`fit_canlabs_thresholds()`](https://for-cast.github.io/landisbc/reference/fit_canlabs_thresholds.md),

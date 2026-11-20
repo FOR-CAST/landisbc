@@ -35,6 +35,7 @@ Named numeric vector of length 5 (names "1".."5") summing to 1.
 ## See also
 
 Other CanLaBS fire severity:
+[`CANLABS_V2_YEARS`](https://for-cast.github.io/landisbc/reference/CANLABS_V2_YEARS.md),
 [`canlabs_v2_files()`](https://for-cast.github.io/landisbc/reference/canlabs_v2_files.md),
 [`classify_canlabs_dnbr()`](https://for-cast.github.io/landisbc/reference/classify_canlabs_dnbr.md),
 [`fit_canlabs_thresholds()`](https://for-cast.github.io/landisbc/reference/fit_canlabs_thresholds.md),

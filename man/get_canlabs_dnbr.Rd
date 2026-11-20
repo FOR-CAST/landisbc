@@ -21,7 +21,9 @@ get_canlabs_dnbr(
 \item{nbac_polys}{\code{sf} NBAC perimeters with a year column; required if
 \code{fire_years} is used for temporal filtering.}
 
-\item{fire_years}{Integer vector of years to keep, or \code{NULL} for all.}
+\item{fire_years}{Integer vector of years to keep, or \code{NULL} for all. Years
+outside \link{CANLABS_V2_YEARS} are dropped with a message, and it is an error
+when none is left.}
 
 \item{drop_salvage}{Logical; if \code{TRUE} (default) sets salvage-logged pixels
 (mask value 1) to \code{NA}.}
@@ -45,6 +47,7 @@ product readme; pass the project's NBAC polygons as \code{nbac_polys}.
 }
 \seealso{
 Other CanLaBS fire severity:
+\code{\link{CANLABS_V2_YEARS}},
 \code{\link[=canlabs_v2_files]{canlabs_v2_files()}},
 \code{\link[=classify_canlabs_dnbr]{classify_canlabs_dnbr()}},
 \code{\link[=compute_observed_severity_dist_canlabs]{compute_observed_severity_dist_canlabs()}},
